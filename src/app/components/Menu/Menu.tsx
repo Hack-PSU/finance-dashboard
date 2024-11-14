@@ -1,10 +1,13 @@
+"use client";
 import React, { useState } from 'react';
+import Link from 'next/link';
 import './menu.css';
+
 
 type Tab = "Reimbursements" | "Analytics";
 
 function SideNavbar() {
-  const [activeTab, setActiveTab] = useState("Reimbursements");
+  const [activeTab, setActiveTab] = useState<Tab>("Reimbursements");
 
   const handleTabClick = (tab: Tab) => {
     setActiveTab(tab);
@@ -12,19 +15,21 @@ function SideNavbar() {
 
   return (
     <div className="sidebar">
-      <h2 className="sidebar-title">Dashboard</h2>
+      <img src="android-chrome-512x512.png" alt="Logo" className='logo'></img>
+      <h2 className="sidebar-title">Finance Dashboard</h2>
       <ul className="sidebar-menu">
         <li
           className={`sidebar-item ${activeTab === "Reimbursements" ? "active" : ""}`}
           onClick={() => handleTabClick("Reimbursements")}
         >
-          Reimbursements
+          <Link href="/reimbursements">Reimbursements</Link>
+          
         </li>
         <li
           className={`sidebar-item ${activeTab === "Analytics" ? "active" : ""}`}
           onClick={() => handleTabClick("Analytics")}
         >
-          Analytics
+          <Link href="/analytics">Analytics</Link>
         </li>
       </ul>
     </div>
