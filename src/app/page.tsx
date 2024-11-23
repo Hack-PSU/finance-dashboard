@@ -1,6 +1,6 @@
 "use client";
 import React from "react"
-import SideNavbar from "./components/Menu/Menu"
+import SideNavbar from "../components/Menu/Menu"
 import { redirect } from "next/navigation";
 
 export default function Home() {
