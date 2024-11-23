@@ -1,6 +1,18 @@
+.content-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 200px;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
 .text{
     font-family: 'Courier New', Courier, monospace;
-    font-size: medium;
+    font-size: large;
     color: black;
     text-align: center;
+    width: 80%;
+    margin: auto;
 }
+
