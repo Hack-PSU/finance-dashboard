@@ -58,7 +58,7 @@ export default function Login() {
               {...field}
               type={showPassword ? "text" : "password"}
               placeholder="Password"
-              className="w-full px-4 py-2 border rounded mt-2"
+              className="w-full px-4 py-2 border rounded mt-2 text-black"
               required
             />
             <button
@@ -101,7 +101,7 @@ export default function Login() {
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold text-center">Sign In</h2>
+            <h2 className="text-2xl font-bold text-center text-black">Sign In</h2>
             <FormProvider {...methods}>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <Controller
@@ -112,7 +112,7 @@ export default function Login() {
                       {...field}
                       type="email"
                       placeholder="Email Address"
-                      className="w-full px-4 py-2 border rounded"
+                      className="w-full px-4 py-2 border rounded text-black"
                       required
                       autoFocus
                     />

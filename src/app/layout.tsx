@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import SideNavbar from "../components/Menu/Menu";
+import SideNavbar from "../components/DashboardLayout/DashboardLayout"
 import { LayoutProvider } from "@/common/context";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { ThemeProvider } from "@mui/material";

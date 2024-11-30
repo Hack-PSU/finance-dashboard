@@ -1,47 +1,44 @@
 "use client";
-import React, { useState } from "react";
-import Link from "next/link";
-import "./menu.css";
+import * as React from 'react';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import Logo from "../../../public/android-chrome-512x512.png";
+import Image from "next/image";
 
-type Tab = "Reimbursements" | "Analytics" | "Login";
-
-function SideNavbar() {
-  const [activeTab, setActiveTab] = useState<Tab>("Reimbursements");
-
-  const handleTabClick = (tab: Tab) => {
-    setActiveTab(tab);
-  };
-
-  return (
-    <div className="sidebar">
-      <img src="android-chrome-512x512.png" alt="Logo" className="logo"></img>
-      <h2 className="sidebar-title">Finance Dashboard</h2>
-      <ul className="sidebar-menu">
-        <li
-          className={`sidebar-item ${
-            activeTab === "Reimbursements" ? "active" : ""
-          }`}
-          onClick={() => handleTabClick("Reimbursements")}
-        >
-          <Link href="/reimbursements">Reimbursements</Link>
-        </li>
-        <li
-          className={`sidebar-item ${
-            activeTab === "Analytics" ? "active" : ""
-          }`}
-          onClick={() => handleTabClick("Analytics")}
-        >
-          <Link href="/analytics">Analytics</Link>
-        </li>
-        <li
-          className={`sidebar-item ${activeTab === "Login" ? "active" : ""}`}
-          onClick={() => handleTabClick("Login")}
-        >
-          <Link href="/login">Login</Link>
-        </li>
-      </ul>
-    </div>
-  );
+interface ButtonAppBarProps {
+  toggleDrawer: (state: 'open' | 'close') => void;
 }
 
-export default SideNavbar;
+export default function ButtonAppBar({ toggleDrawer }: ButtonAppBarProps) {
+
+  const handleToggleDrawer = (open: boolean) => () => {
+    toggleDrawer(open ? 'open' : 'close');
+  };
+  
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar sx={{backgroundColor:"#64646429"}}position="static">
+        <Toolbar>
+          <IconButton
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            sx={{ mr: 2, color: "black"}}
+            onClick={handleToggleDrawer(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Image src={Logo} alt="Logo" width="40" height="40"/>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: "black", ml: 3}}>
+            Finance Dashbaord
+          </Typography>
+        </Toolbar>
+      </AppBar>
+    </Box>
+  );
+}
