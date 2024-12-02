@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm, FormProvider, Controller, Control } from "react-hook-form";
+import {
+  useForm,
+  FormProvider,
+  Controller,
+  Control,
+} from "react-hook-form";
 import { useFirebase } from "@/common/context/FirebaseProvider";
 
 interface FormData {
@@ -10,9 +15,9 @@ interface FormData {
 }
 
 export default function Login() {
-  const { loginWithEmailAndPassword, isAuthenticated, logout } = useFirebase();
+  const { user, loginWithEmailAndPassword, logout, isLoading } = useFirebase();
   const [loginError, setLoginError] = useState<string>("");
-  const [isLoading, setLoading] = useState<boolean>(false);
+  const [isProcessing, setProcessing] = useState<boolean>(false);
 
   const methods = useForm<FormData>({
     defaultValues: { email: "", password: "" },
@@ -20,7 +25,7 @@ export default function Login() {
   const { handleSubmit, control } = methods;
 
   const onSubmit = async (data: FormData) => {
-    setLoading(true);
+    setProcessing(true);
     setLoginError("");
     try {
       await loginWithEmailAndPassword(data.email, data.password);
@@ -34,7 +39,7 @@ export default function Login() {
       console.error(error);
       setLoginError(errorMessage);
     }
-    setLoading(false);
+    setProcessing(false);
   };
 
   const PasswordInput = ({
@@ -60,11 +65,13 @@ export default function Login() {
               placeholder="Password"
               className="w-full px-4 py-2 border rounded mt-2 text-black"
               required
+              aria-label="Password"
             />
             <button
               type="button"
               className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-600"
               onClick={toggleShowPassword}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? "Hide" : "Show"}
             </button>
@@ -82,10 +89,19 @@ export default function Login() {
     }
   };
 
+  // Ensure that authentication state is loaded before rendering
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-200">
+        <div className="text-xl text-gray-700">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-200">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-lg">
-        {isAuthenticated ? (
+        {user ? (
           <>
             <h2 className="text-2xl font-bold text-center text-green-600">
               Success
@@ -101,42 +117,49 @@ export default function Login() {
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold text-center text-black">Sign In</h2>
+            <h2 className="text-2xl font-bold text-center text-black">
+              Sign In
+            </h2>
             <FormProvider {...methods}>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <Controller
                   name="email"
                   control={control}
                   render={({ field }) => (
-                    <input
-                      {...field}
-                      type="email"
-                      placeholder="Email Address"
-                      className="w-full px-4 py-2 border rounded text-black"
-                      required
-                      autoFocus
-                    />
+                    <div>
+                      <label htmlFor="email" className="sr-only">
+                        Email Address
+                      </label>
+                      <input
+                        {...field}
+                        id="email"
+                        type="email"
+                        placeholder="Email Address"
+                        className="w-full px-4 py-2 border rounded text-black"
+                        required
+                        autoFocus
+                        aria-invalid={!!loginError}
+                        aria-describedby="email-error"
+                      />
+                    </div>
                   )}
                 />
                 <PasswordInput name="password" control={control} />
                 {loginError && (
-                  <div className="text-red-500 text-sm mt-2 text-center">
+                  <div
+                    id="email-error"
+                    className="text-red-500 text-sm mt-2 text-center"
+                    role="alert"
+                  >
                     {loginError}
                   </div>
                 )}
                 <button
                   type="submit"
                   className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                  disabled={isLoading}
+                  disabled={isProcessing}
                 >
-                  {isLoading ? "Signing In..." : "Sign In"}
-                </button>
-                <button
-                  type="button"
-                  className="w-full py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700 mt-4"
-                  onClick={handleLogout}
-                >
-                  Log Out
+                  {isProcessing ? "Signing In..." : "Sign In"}
                 </button>
               </form>
             </FormProvider>
