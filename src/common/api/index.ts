@@ -6,6 +6,7 @@ import { NotificationKeys } from "./notification";
 import { JudgingScoreKeys } from "./judging";
 import { FlagQueryKeys } from "./flags";
 import { HackathonQueryKeys } from "@/common/api/hackathon";
+import { FinanceKeys } from "@/common/api/finance";
 
 export const QueryKeys = {
   hackers: HackerKeys,
@@ -16,6 +17,7 @@ export const QueryKeys = {
   judgingScores: JudgingScoreKeys,
   flags: FlagQueryKeys,
   hackathons: HackathonQueryKeys,
+  finance: FinanceKeys,
 };
 
 export * from "./event";
@@ -27,3 +29,4 @@ export * from "./judging";
 export * from "./flags";
 export * from "./hackathon";
 export * from "./utils";
+export * from "./finance";
