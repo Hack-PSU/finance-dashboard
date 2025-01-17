@@ -20,7 +20,7 @@ interface TemporaryDrawerProps {
 export default function TemporaryDrawer({ open, onOpenChange }: TemporaryDrawerProps) {
 
   const menuItems = [
-    { text: 'Reimbursements', path: '/reimbursements' },
+    { text: 'Finance', path: '/finance' },
     { text: 'Analytics', path: '/analytics' },
     { text: 'Login', path: '/login' }
   ];
