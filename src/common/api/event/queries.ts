@@ -4,7 +4,7 @@ import {
   CreateMutationReturn,
   createQuery,
   CreateQueryReturn,
-} from "@/common/api/utils"
+} from "@/common/api/utils";
 import { EventEntity, PatchEventEntity } from "./entity";
 import { QueryAction, QueryScope } from "@/common/api/types";
 

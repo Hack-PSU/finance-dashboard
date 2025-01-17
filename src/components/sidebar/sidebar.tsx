@@ -1,32 +1,35 @@
-"use client"
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
-import MoneyIcon from '@mui/icons-material/AttachMoney';
-import LoginIcon from '@mui/icons-material/Login';
-import Link from 'next/link';
+"use client";
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import AnalyticsIcon from "@mui/icons-material/Analytics";
+import MoneyIcon from "@mui/icons-material/AttachMoney";
+import LoginIcon from "@mui/icons-material/Login";
+import Link from "next/link";
 
 interface TemporaryDrawerProps {
   open: boolean;
-  onOpenChange: (state: 'open' | 'close') => void;
+  onOpenChange: (state: "open" | "close") => void;
 }
 
-export default function TemporaryDrawer({ open, onOpenChange }: TemporaryDrawerProps) {
-
+export default function TemporaryDrawer({
+  open,
+  onOpenChange,
+}: TemporaryDrawerProps) {
   const menuItems = [
-    { text: 'Finance', path: '/finance' },
-    { text: 'Analytics', path: '/analytics' },
-    { text: 'Login', path: '/login' }
+    { text: "Finance", path: "/finance" },
+    { text: "Analytics", path: "/analytics" },
+    { text: "Reimbursement", path: "/reimbursement" },
+    { text: "Login", path: "/login" },
   ];
 
   const handleToggleDrawer = (open: boolean) => () => {
-    onOpenChange(open ? 'open' : 'close');
+    onOpenChange(open ? "open" : "close");
   };
 
   const DrawerList = (
@@ -34,9 +37,19 @@ export default function TemporaryDrawer({ open, onOpenChange }: TemporaryDrawerP
       <List>
         {menuItems.map((item, index) => (
           <ListItem key={item.text} disablePadding>
-            <ListItemButton component={Link} href={item.path} onClick={handleToggleDrawer(false)}>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              onClick={handleToggleDrawer(false)}
+            >
               <ListItemIcon>
-                {index == 0 ? <MoneyIcon /> : index == 1 ? <AnalyticsIcon /> : <LoginIcon />}
+                {index == 0 ? (
+                  <MoneyIcon />
+                ) : index == 1 ? (
+                  <AnalyticsIcon />
+                ) : (
+                  <LoginIcon />
+                )}
               </ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
@@ -52,4 +65,3 @@ export default function TemporaryDrawer({ open, onOpenChange }: TemporaryDrawerP
     </Drawer>
   );
 }
-

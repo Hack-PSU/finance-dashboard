@@ -1,82 +1,70 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+// apiClient.ts
 import { auth, getEnvironment } from "@/common/config";
-import { DateTime } from "luxon";
-import { getIdTokenResult, getIdToken, User } from "@firebase/auth";
-
-export type ApiAxiosInstance = AxiosInstance & {
-  defaults: {
-    headers: {
-      authorization?: string;
-      exp?: string;
-    };
-  };
-};
-
-type ApiAxiosRequestConfig = AxiosRequestConfig & {
-  headers: {
-    authorization?: string;
-    exp?: string;
-  };
-};
+import { getIdToken, onIdTokenChanged } from "@firebase/auth";
 
 const config = getEnvironment();
 
-const api = axios.create({
-  baseURL: config.baseURL,
-}) as ApiAxiosInstance;
+/**
+ * A wrapper around fetch() that:
+ * - Fetches an auth token from Firebase, if logged in
+ * - Adds `Authorization: Bearer <token>` to each request if available
+ * - Automatically sets content-type = application/json if we pass a body
+ * - Basic 401 handling
+ */
+export async function apiFetch<T>(
+  url: string,
+  options: RequestInit & { noAuth?: boolean } = {},
+): Promise<T> {
+  const { noAuth, ...fetchOptions } = options;
 
-const shouldRefreshToken = (config: ApiAxiosRequestConfig) => {
-  const token = config.headers.authorization?.split("Bearer ")[0];
-  const expiration = config.headers.exp;
-  const isExpired =
-    DateTime.fromMillis(parseInt(expiration ?? "")) < DateTime.now();
-
-  return isExpired || !token || !expiration;
-};
-
-const refreshApiToken = async (config: ApiAxiosRequestConfig) => {
-  if (!auth.currentUser) return;
-  const tokenResult = await getIdTokenResult(auth.currentUser);
-
-  if (tokenResult) {
-    const { token, expirationTime } = tokenResult;
-    // required for request retry
-    config.headers.authorization = `Bearer ${token}`;
-
-    // for subsequent requests
-    api.defaults.headers.common["authorization"] = `Bearer ${token}`;
-    api.defaults.headers.common["exp"] = expirationTime;
-  }
-};
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const request = error.config;
-    const isRefreshNeeded =
-      shouldRefreshToken(request) &&
-      error.response.status === 401 &&
-      !request._retried;
-
-    if (isRefreshNeeded) {
-      request._retried = true;
-      await refreshApiToken(request);
-      return api(request);
+  // Optionally attach headers
+  const headers = new Headers(fetchOptions.headers || {});
+  if (!noAuth) {
+    // Attempt to get token from Firebase user
+    const user = auth.currentUser;
+    if (user) {
+      const token = await getIdToken(user);
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
     }
-    return Promise.reject(error);
   }
-);
 
-export const initApi = async (user: User | null) => {
+  // If we're sending JSON, set the content type
+  if (
+    fetchOptions.body &&
+    typeof fetchOptions.body === "string" &&
+    !headers.has("Content-Type")
+  ) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const finalUrl = `${config.baseURL}${url}`;
+
+  const response = await fetch(finalUrl, {
+    ...fetchOptions,
+    headers,
+  });
+
+  if (response.status === 401) {
+    // Optionally refresh token or logout user, etc.
+    throw new Error("Unauthorized");
+  }
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Request failed (${response.status}): ${errorBody}`);
+  }
+
+  // Return JSON body
+  return (await response.json()) as T;
+}
+
+// Listen for token changes in Firebase and do something if needed
+onIdTokenChanged(auth, async (user) => {
+  // e.g., you might want to force a refetch or store a new token in state
   if (user) {
     const token = await getIdToken(user);
-    api.defaults.headers.common["authorization"] = `Bearer ${token}`;
+    console.log("New Firebase ID token:", token);
   }
-};
-
-export const resetApi = () => {
-  delete api.defaults.headers.common["authorization"];
-  delete api.defaults.headers.common["exp"];
-};
-
-export { api };
+});

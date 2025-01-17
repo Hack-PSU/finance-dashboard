@@ -37,10 +37,8 @@ export const reassignProject: CreateMutationReturn<
   { organizerId: string; projectId: number }
 > = createMutation(
   "/organizers/:organizerId/judging/projects/:projectId",
-  "DELETE"
+  "DELETE",
 );
-
-
 
 export const JudgingScoreKeys = {
   all: [{ entity: "judging_score" }] as const,

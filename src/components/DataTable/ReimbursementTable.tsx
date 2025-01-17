@@ -56,7 +56,7 @@ export function DataTable<T extends object>({
   data,
   getRowId,
   searchPlaceholder = "Search…",
-  maxHeight = 800,
+  maxHeight = 600,
 }: DataTableProps<T>) {
   // Local states for search and sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -98,13 +98,20 @@ export function DataTable<T extends object>({
     }
 
     // 3) Sort by the selected column (asc or desc)
-    return filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const valA = a[sortColumn];
       const valB = b[sortColumn];
 
-      // Basic sorting logic (string or number)
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      // Handle different data types
+      if (typeof valA === "number" && typeof valB === "number") {
+        return sortOrder === "asc" ? valA - valB : valB - valA;
+      }
+
+      const stringA = String(valA).toLowerCase();
+      const stringB = String(valB).toLowerCase();
+
+      if (stringA < stringB) return sortOrder === "asc" ? -1 : 1;
+      if (stringA > stringB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
   }, [data, searchTerm, sortColumn, sortOrder]);
@@ -125,7 +132,7 @@ export function DataTable<T extends object>({
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
@@ -136,18 +143,13 @@ export function DataTable<T extends object>({
       {/* Optional title or heading */}
       <Typography
         variant="h6"
-        sx={{
-          mb: 1,
-          fontWeight: 600,
-          textAlign: "center",
-          fontSize: "1.1rem",
-        }}
+        className="mb-2 font-bold text-center text-lg sm:text-xl text-gray-800"
       >
         Data Table
       </Typography>
 
       {/* Search box */}
-      <Box sx={{ mb: 2 }}>
+      <Box className="mb-4">
         <TextField
           size="small"
           variant="outlined"
@@ -155,43 +157,27 @@ export function DataTable<T extends object>({
           placeholder={searchPlaceholder}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 4, // Apple-like rounding
-            },
+          className="bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+          InputProps={{
+            className: "text-gray-800",
+          }}
+          InputLabelProps={{
+            className: "text-gray-800",
           }}
         />
       </Box>
 
-      <Paper
-        elevation={3}
-        sx={{
-          borderRadius: 4, // Rounded corners for the container
-          overflow: "hidden", // So sticky header corners stay neat
-        }}
-      >
+      <Paper className="rounded-md overflow-hidden bg-white shadow-md">
         <TableContainer
-          sx={{
-            maxHeight,
-            borderRadius: 4,
-            // Apple-inspired subtle shadow or you can keep it default
-          }}
+          className={`max-h-${typeof maxHeight === "number" ? maxHeight / 16 : maxHeight} overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200`}
         >
-          <Table aria-label="dynamic table" stickyHeader>
+          <Table aria-label="data table" stickyHeader>
             <TableHead>
-              <TableRow
-                sx={{
-                  backgroundColor: "white",
-                }}
-              >
+              <TableRow>
                 {columns.map((col) => (
                   <TableCell
                     key={String(col.id)}
-                    sx={{
-                      fontWeight: 600,
-                      backgroundColor: "#f6f6f6", // Light background for headers
-                      borderBottom: "1px solid #e0e0e0",
-                    }}
+                    className="font-bold bg-gray-700 text-white border-b-2 border-gray-200"
                   >
                     {/* If sortable, wrap the label in a TableSortLabel */}
                     {col.sortable ? (
@@ -199,6 +185,7 @@ export function DataTable<T extends object>({
                         active={sortColumn === col.id}
                         direction={sortColumn === col.id ? sortOrder : "asc"}
                         onClick={() => handleSort(col.id)}
+                        className="text-white"
                       >
                         {col.label}
                       </TableSortLabel>
@@ -211,46 +198,42 @@ export function DataTable<T extends object>({
             </TableHead>
 
             <TableBody>
-              {paginatedData.map((row) => (
-                <TableRow
-                  key={getRowId(row)}
-                  sx={{
-                    "&:last-child td, &:last-child th": { border: 0 },
-                    "&:hover": {
-                      backgroundColor: "#fafafa",
-                    },
-                  }}
-                >
-                  {columns.map((col) => (
-                    <TableCell
-                      key={String(col.id)}
-                      sx={{
-                        borderBottom: "1px solid #f0f0f0",
-                      }}
-                    >
-                      {col.render
-                        ? col.render(row)
-                        : // Default: just show the raw data
-                          String(row[col.id] ?? "")}
-                    </TableCell>
-                  ))}
+              {paginatedData.length > 0 ? (
+                paginatedData.map((row) => (
+                  <TableRow
+                    key={getRowId(row)}
+                    className="even:bg-gray-100 hover:bg-gray-200"
+                  >
+                    {columns.map((col) => (
+                      <TableCell
+                        key={String(col.id)}
+                        className="border-b border-gray-200 text-gray-800"
+                      >
+                        {col.render
+                          ? col.render(row)
+                          : // Default: just show the raw data
+                            String(row[col.id] ?? "")}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    align="center"
+                    className="py-4 text-gray-800"
+                  >
+                    No records found.
+                  </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
 
         {/* Pagination controls */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            paddingRight: 2,
-            paddingTop: 1,
-            paddingBottom: 1,
-          }}
-        >
+        <Box className="flex justify-end items-center px-4 py-2 bg-gray-100">
           <TablePagination
             component="div"
             count={filteredSortedData.length}
@@ -259,16 +242,14 @@ export function DataTable<T extends object>({
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              "& .MuiTablePagination-displayedRows": {
-                marginRight: 2,
-              },
-              "& .MuiTablePagination-toolbar": {
-                paddingRight: 0,
-              },
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 4,
-              },
+            labelRowsPerPage="Rows per page:"
+            className="text-gray-800"
+            classes={{
+              root: "bg-gray-100",
+              toolbar: "flex justify-between",
+              selectLabel: "text-gray-800",
+              select: "text-gray-800",
+              menuItem: "text-gray-800",
             }}
           />
         </Box>

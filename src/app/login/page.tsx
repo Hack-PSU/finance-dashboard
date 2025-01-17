@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  useForm,
-  FormProvider,
-  Controller,
-  Control,
-} from "react-hook-form";
+import { useForm, FormProvider, Controller, Control } from "react-hook-form";
 import { useFirebase } from "@/common/context/FirebaseProvider";
 
 interface FormData {

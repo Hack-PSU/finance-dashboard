@@ -1,61 +1,107 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-import {
-  createMutation,
-  CreateMutationReturn,
-  createQuery,
-  CreateQueryReturn,
-} from "@/common/api/utils";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { apiFetch } from "../axios";
 import { FinanceEntity } from "./entity";
-import { QueryAction, QueryScope } from "@/common/api/types";
 
-export const getAllFinances: CreateQueryReturn<FinanceEntity[]> =
-  createQuery("/finances");
+export async function getAllFinances(): Promise<FinanceEntity[]> {
+  return apiFetch<FinanceEntity[]>("/finances", {
+    method: "GET",
+  });
+}
 
-export const getFinance: CreateQueryReturn<FinanceEntity, { id: string }> =
-  createQuery("/finances/:id");
+export async function getFinance(id: string): Promise<FinanceEntity> {
+  return apiFetch<FinanceEntity>(`/finances/${id}`, {
+    method: "GET",
+  });
+}
 
-export const createFinance: CreateMutationReturn<
-  Omit<
+export async function createFinance(
+  data: Omit<
     FinanceEntity,
-    "id" | "createdAt" | "hackathonId" | "updatedBy" | "receiptUrl"
+    "id" | "createdAt" | "hackathonId" | "updatedBy" | "receiptUrl" | "status"
   >,
-  FinanceEntity
-> = createMutation("/finances");
+): Promise<FinanceEntity> {
+  return apiFetch<FinanceEntity>("/finances", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
 
-export const createFinanceForm: CreateMutationReturn<FormData, FinanceEntity> =
-  createMutation("/finances");
+export async function createFinanceWithForm(
+  formData: FormData,
+): Promise<FinanceEntity> {
+  return apiFetch<FinanceEntity>("/finances", {
+    method: "POST",
+    body: formData,
+  });
+}
 
-export const getCheque: CreateQueryReturn<Blob, { id: string }> = createQuery(
-  "/finances/:id/cheque"
-);
+export async function getCheque(id: string): Promise<Blob> {
+  return apiFetch<Blob>(`/finances/${id}/cheque`, {
+    method: "GET",
+  });
+}
 
-/**
- * Finance cache keys for queries and mutations
- */
-export const FinanceKeys = {
-  all: [{ entity: "finance" }] as const,
-  findAll: () =>
-    [
-      {
-        ...FinanceKeys.all[0],
-        action: QueryAction.query,
-        scope: QueryScope.ALL,
-      },
-    ] as const,
-  findById: (id: string) =>
-    [
-      { ...FinanceKeys.all[0], action: QueryAction.query, scope: [id] },
-    ] as const,
-  create: () =>
-    [{ ...FinanceKeys.all[0], action: QueryAction.create, scope: [] }] as const,
-  getCheque: (id: string) =>
-    [
-      {
-        ...FinanceKeys.all[0],
-        action: QueryAction.query,
-        scope: [id, "cheque"],
-      },
-    ] as const,
+// Query Keys
+export const financeKeys = {
+  all: ["finances"] as const,
+  lists: () => [...financeKeys.all] as const,
+  detail: (id: string) => [...financeKeys.all, id] as const,
+  cheque: (id: string) => [...financeKeys.all, id, "cheque"] as const,
 };
 
+// Query Hooks
+export function useAllFinances() {
+  return useQuery<FinanceEntity[]>({
+    queryKey: financeKeys.lists(),
+    queryFn: () => getAllFinances(),
+  });
+}
 
+export function useFinance(id: string) {
+  return useQuery<FinanceEntity>({
+    queryKey: financeKeys.detail(id),
+    queryFn: () => getFinance(id),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCheque(id: string) {
+  return useQuery<Blob>({
+    queryKey: financeKeys.cheque(id),
+    queryFn: () => getCheque(id),
+    enabled: Boolean(id),
+  });
+}
+
+// Mutation Hooks
+export function useCreateFinance() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      newData: Omit<
+        FinanceEntity,
+        | "id"
+        | "createdAt"
+        | "hackathonId"
+        | "updatedBy"
+        | "receiptUrl"
+        | "status"
+      >,
+    ) => createFinance(newData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.lists() });
+    },
+  });
+}
+
+export function useCreateFinanceWithForm() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (formData: FormData) => createFinanceWithForm(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.lists() });
+    },
+  });
+}

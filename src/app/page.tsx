@@ -1,6 +1,6 @@
 "use client";
-import React from "react"
-import SideNavbar from "../components/DashboardLayout/DashboardLayout"
+import React from "react";
+import SideNavbar from "../components/DashboardLayout/DashboardLayout";
 import { redirect } from "next/navigation";
 
 export default function Home() {
@@ -8,8 +8,7 @@ export default function Home() {
   return (
     <div className="App">
       <SideNavbar />
-      <div className="content">
-      </div>
+      <div className="content"></div>
     </div>
-  )
+  );
 }

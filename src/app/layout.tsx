@@ -33,12 +33,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <LayoutProvider>
-            <AppRouterCacheProvider>
-              <ThemeProvider theme={theme}>
-                <SideNavbar />
-                {children}
-              </ThemeProvider>
-            </AppRouterCacheProvider>
+          <AppRouterCacheProvider>
+            <ThemeProvider theme={theme}>
+              <SideNavbar />
+              {children}
+            </ThemeProvider>
+          </AppRouterCacheProvider>
         </LayoutProvider>
       </body>
     </html>

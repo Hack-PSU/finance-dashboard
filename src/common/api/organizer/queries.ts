@@ -1,83 +1,131 @@
-import {
-  createMutation,
-  CreateMutationReturn,
-  createQuery,
-  CreateQueryReturn,
-} from "@/common/api/utils";
-import { OrganizerEntity } from "./entity";
-import { QueryAction, QueryScope } from "@/common/api/types";
+// organizerApi.ts
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { apiFetch } from "@/common/api/axios";
+
+export enum Role {
+  NONE,
+  VOLUNTEER,
+  TEAM,
+  EXEC,
+  TECH,
+  FINANCE,
+}
+
+export interface OrganizerEntity {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  privilege: Role;
+  judgingLocation: string;
+  award: string;
+}
+
+// 1. GET all organizers
+export async function getAllOrganizers(): Promise<OrganizerEntity[]> {
+  return apiFetch<OrganizerEntity[]>("/organizers", {
+    method: "GET",
+  });
+}
+
+// 2. GET one organizer by ID
+export async function getOrganizer(id: string): Promise<OrganizerEntity> {
+  return apiFetch<OrganizerEntity>(`/organizers/${id}`, {
+    method: "GET",
+  });
+}
+
+// 3. CREATE an organizer
+export async function createOrganizer(
+  data: Omit<OrganizerEntity, "id">,
+): Promise<OrganizerEntity> {
+  return apiFetch<OrganizerEntity>("/organizers", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+// 4. UPDATE (PATCH) an organizer
+export async function updateOrganizer(
+  id: string,
+  data: Partial<Omit<OrganizerEntity, "id">>,
+): Promise<OrganizerEntity> {
+  return apiFetch<OrganizerEntity>(`/organizers/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+// etc. for DELETE, or other endpoints ...
 
 /**
- * Gets all organizers for the active hackathon
- * @param params (optional)
- * @param token (optional)
- * @link https://api.hackpsu.org/v2/doc/#api-Admin-Get_All_Organizers
+ * Query Keys
+ *
+ * You had something similar in your code before,
+ * but this is a straightforward approach:
  */
-export const getAllOrganizers: CreateQueryReturn<OrganizerEntity[]> =
-  createQuery("/organizers");
-
-/**
- * Gets an organizer using their Firebase UID
- * @param params (required): The Firebase UID of the user
- * @param token (optional)
- * @link https://api.hackpsu.org/v2/doc/#api-Admin-Get_Organizer
- */
-export const getOrganizer: CreateQueryReturn<OrganizerEntity, { id: string }> =
-  createQuery("/organizers/:id");
-
-/**
- * Creates an organizer
- * @param params (optional)
- * @param token (optional)
- * @link https://api.hackpsu.org/v2/doc/#api-Admin-Add_Organizer
- */
-export const createOrganizer: CreateMutationReturn<OrganizerEntity> =
-  createMutation("/organizers");
-
-/**
- * Updates an organizer
- * @param params (optional)
- * @param token (optional)
- * @link https://api.hackpsu.org/v2/doc/#api-Admin-Delete_Organizer
- */
-export const updateOrganizer: CreateMutationReturn<
-  Partial<Omit<OrganizerEntity, "id">>,
-  OrganizerEntity,
-  { id: string }
-> = createMutation("/organizers/:id", "PATCH");
-
-export const OrganizerQueryKeys = {
-  all: [{ entity: "organizer" }] as const,
-  findAll: () =>
-    [
-      {
-        ...OrganizerQueryKeys.all[0],
-        action: QueryAction.query,
-        scope: QueryScope.ALL,
-      },
-    ] as const,
-  findOne: (id: string | number) =>
-    [
-      {
-        ...OrganizerQueryKeys.all[0],
-        action: QueryAction.query,
-        scope: id,
-      },
-    ] as const,
-  createOne: () =>
-    [
-      {
-        ...OrganizerQueryKeys.all[0],
-        action: QueryAction.create,
-        scope: QueryScope.NEW,
-      },
-    ] as const,
-  updateOne: (...ids: (string | number)[]) =>
-    [
-      {
-        ...OrganizerQueryKeys.all[0],
-        action: QueryAction.update,
-        scope: [...ids],
-      },
-    ] as const,
+export const organizerQueryKeys = {
+  all: ["organizers"] as const,
+  detail: (id: string) => ["organizer", id] as const,
 };
+
+/**
+ * 1) Hook for reading all organizers
+ */
+export function useAllOrganizers() {
+  return useQuery<OrganizerEntity[]>({
+    queryKey: organizerQueryKeys.all,
+    queryFn: () => getAllOrganizers(),
+  });
+}
+
+/**
+ * 2) Hook for reading one organizer
+ */
+export function useOrganizer(id: string) {
+  return useQuery<OrganizerEntity>({
+    queryKey: organizerQueryKeys.detail(id),
+    queryFn: () => getOrganizer(id),
+    enabled: Boolean(id), // only run if ID is defined
+  });
+}
+
+/**
+ * 3) Hook for creating an organizer
+ */
+export function useCreateOrganizer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (newData: Omit<OrganizerEntity, "id">) =>
+      createOrganizer(newData),
+    onSuccess: () => {
+      // Invalidate all organizers list
+      queryClient.invalidateQueries({ queryKey: organizerQueryKeys.all });
+    },
+  });
+}
+
+/**
+ * 4) Hook for updating an organizer
+ */
+export function useUpdateOrganizer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Omit<OrganizerEntity, "id">>;
+    }) => updateOrganizer(id, data),
+    onSuccess: (updated) => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: organizerQueryKeys.all });
+      queryClient.invalidateQueries({
+        queryKey: organizerQueryKeys.detail(updated.id),
+      });
+    },
+  });
+}

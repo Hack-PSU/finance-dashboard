@@ -1,10 +1,16 @@
+// components/Reimbursements.tsx
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { FinanceEntity, getAllFinances } from "@/common/api/finance";
-import { DataTable, TableColumn } from "@/components/Tables/ReimbursementTable";
+import { FinanceEntity, Status, useAllFinances } from "@/common/api/finance";
+import {
+  DataTable,
+  TableColumn,
+} from "@/components/DataTable/ReimbursementTable";
+import { StatusCell } from "@/components/DataTable/StatusCell";
 
 // MUI components for the snackbar
-import { Snackbar, Alert } from "@mui/material";
+import { Snackbar, Alert, Box, Typography } from "@mui/material";
 
 function Reimbursements() {
   const [finances, setFinances] = useState<FinanceEntity[]>([]);
@@ -15,23 +21,39 @@ function Reimbursements() {
   } | null>(null);
 
   // Fetch finances when the component mounts
+  const { data, error } = useAllFinances();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const fetchedFinances = await getAllFinances();
-        setFinances(fetchedFinances.data);
-      } catch (error) {
-        console.error("Error fetching finances", error);
-        setSnackbar({
-          open: true,
-          message: "Error fetching finances",
-          severity: "error",
-        });
-      }
-    };
+    if (data) {
+      setFinances(data);
+    }
+    if (error) {
+      setSnackbar({
+        open: true,
+        message: "Error fetching finances",
+        severity: "error",
+      });
+    }
+  }, [data, error]);
 
-    fetchData();
-  }, []);
+  // Handler for status change (Functionality to be implemented later)
+  const handleStatusChange = (
+    rowId: string,
+    newStatus: FinanceEntity["status"],
+  ) => {
+    // Placeholder for future implementation
+    console.log(`Change status of row ${rowId} to ${newStatus}`);
+    // Example: Update the state locally (Optional)
+    setFinances((prevFinances) =>
+      prevFinances.map((finance) =>
+        finance.id === rowId ? { ...finance, status: newStatus } : finance,
+      ),
+    );
+    setSnackbar({
+      open: true,
+      message: `Status updated to ${newStatus}`,
+      severity: "success",
+    });
+  };
 
   // Define the columns for the DataTable, matching only the desired FinanceEntity fields
   const columns: TableColumn<FinanceEntity>[] = [
@@ -44,6 +66,7 @@ function Reimbursements() {
       id: "amount",
       label: "Amount",
       sortable: true,
+      render: (row) => `$${row.amount.toFixed(2)}`, // Format amount as currency
     },
     {
       id: "description",
@@ -59,6 +82,14 @@ function Reimbursements() {
       id: "status",
       label: "Status",
       sortable: true,
+      render: (row: { status: Status; id: string }) => (
+        <StatusCell
+          status={row.status}
+          onChange={(newStatus: Status) =>
+            handleStatusChange(row.id, newStatus)
+          }
+        />
+      ),
     },
     {
       id: "receiptUrl",
@@ -76,19 +107,21 @@ function Reimbursements() {
   ];
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>Reimbursements</h1>
+    <Box sx={{ padding: "1rem" }}>
+      <Typography variant="h4" sx={{ mb: 4, color: "#252879" }}>
+        Reimbursements
+      </Typography>
 
       {/* Reusable DataTable example */}
       <DataTable
         columns={columns}
         data={finances}
-        getRowId={(row) => row.id} // We still use `row.id` as the unique key, but we're not displaying it
+        getRowId={(row) => row.id}
         searchPlaceholder="Search Finance Items..."
-        maxHeight={1000}
+        maxHeight={600}
       />
 
-      {/* Snackbar for errors */}
+      {/* Snackbar for notifications */}
       {snackbar && (
         <Snackbar
           open={snackbar.open}
@@ -105,7 +138,7 @@ function Reimbursements() {
           </Alert>
         </Snackbar>
       )}
-    </div>
+    </Box>
   );
 }
 

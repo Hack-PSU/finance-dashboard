@@ -12,32 +12,35 @@ type PathParams = {
 export type CreateQueryReturn<
   TResponse,
   TParams extends PathParams = {},
-  TQuery extends object = {}
+  TQuery extends object = {},
 > = (
   params?: TParams,
   query?: TQuery,
-  token?: string
+  token?: string,
 ) => Promise<QueryReturn<TResponse>>;
 
 export type CreateMutationReturn<
   TEntity,
   TResponse = TEntity,
   TParams extends PathParams = {},
-  TQuery extends object = {}
+  TQuery extends object = {},
 > = (
   entity: TEntity,
   params?: TParams,
   query?: TQuery,
-  token?: string
+  token?: string,
 ) => Promise<QueryReturn<TResponse>>;
 
 function replacePathParams(path: string, params: PathParams) {
-  const replaceParams = Object.keys(params).reduce((acc, curr) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    acc[`:${curr}`] = params[curr] as any;
-    return acc;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }, {} as { [key: string]: any });
+  const replaceParams = Object.keys(params).reduce(
+    (acc, curr) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      acc[`:${curr}`] = params[curr] as any;
+      return acc;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    },
+    {} as { [key: string]: any },
+  );
 
   const regex = new RegExp(Object.keys(replaceParams).join("|"), "gi");
   return path.replace(regex, (match) => replaceParams[match]);
@@ -46,7 +49,7 @@ function replacePathParams(path: string, params: PathParams) {
 export function createQuery<
   TResponse,
   TParams extends PathParams = {},
-  TQuery extends object = {}
+  TQuery extends object = {},
 >(url: string): CreateQueryReturn<TResponse, TParams, TQuery> {
   return (params, query, token) => {
     let endpoint = url;
@@ -74,10 +77,10 @@ export function createMutation<
   TEntity,
   TResponse,
   TParams extends PathParams = {},
-  TQuery extends object = {}
+  TQuery extends object = {},
 >(
   url: string,
-  method: Method = "POST"
+  method: Method = "POST",
 ): CreateMutationReturn<TEntity, TResponse, TParams, TQuery> {
   return (entity, params, query, token) => {
     let endpoint = url;
@@ -103,7 +106,7 @@ export function createMutation<
 }
 
 export async function fetch<TResponse>(
-  queryFn: () => Promise<QueryReturn<TResponse>>
+  queryFn: () => Promise<QueryReturn<TResponse>>,
 ): Promise<TResponse | undefined> {
   const resp = await queryFn();
   if (resp && resp.data) {
