@@ -39,7 +39,7 @@ function replacePathParams(path: string, params: PathParams) {
       return acc;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     },
-    {} as { [key: string]: any },
+    {} as { [key: string]: any }, // eslint-disable-line @typescript-eslint/no-explicit-any
   );
 
   const regex = new RegExp(Object.keys(replaceParams).join("|"), "gi");

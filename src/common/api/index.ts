@@ -1,23 +1,19 @@
 import { EventKeys } from "./event";
 import { HackerKeys } from "./hacker";
 import { LocationKeys } from "./location";
-import { OrganizerQueryKeys } from "./organizer";
 import { NotificationKeys } from "./notification";
 import { JudgingScoreKeys } from "./judging";
 import { FlagQueryKeys } from "./flags";
 import { HackathonQueryKeys } from "@/common/api/hackathon";
-import { FinanceKeys } from "@/common/api/finance";
 
 export const QueryKeys = {
   hackers: HackerKeys,
   events: EventKeys,
   locations: LocationKeys,
-  organizers: OrganizerQueryKeys,
   notifications: NotificationKeys,
   judgingScores: JudgingScoreKeys,
   flags: FlagQueryKeys,
   hackathons: HackathonQueryKeys,
-  finance: FinanceKeys,
 };
 
 export * from "./event";

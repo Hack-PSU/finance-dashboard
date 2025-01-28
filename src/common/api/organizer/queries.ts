@@ -1,25 +1,8 @@
 // organizerApi.ts
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiFetch } from "@/common/api/axios";
+import { OrganizerEntity } from "./entity";
 
-export enum Role {
-  NONE,
-  VOLUNTEER,
-  TEAM,
-  EXEC,
-  TECH,
-  FINANCE,
-}
-
-export interface OrganizerEntity {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  privilege: Role;
-  judgingLocation: string;
-  award: string;
-}
 
 // 1. GET all organizers
 export async function getAllOrganizers(): Promise<OrganizerEntity[]> {
