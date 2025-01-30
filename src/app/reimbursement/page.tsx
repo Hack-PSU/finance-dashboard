@@ -19,16 +19,18 @@ import {
   Step,
   StepLabel,
 } from "@mui/material";
+import { CloudUpload } from "@mui/icons-material";
+import { styled } from "@mui/material/styles";
+import { z } from "zod";
+import { useFirebase } from "@/common/context";
 import {
   Status,
   SubmitterType,
   useCreateFinance,
   useCreateFinanceWithForm,
 } from "@/common/api/finance";
-import { CloudUpload } from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
-import { useFirebase } from "@/common/context";
-import { z } from "zod";
+
+import { Category } from "@/common/api/finance";
 
 // Custom styled components
 const VisuallyHiddenInput = styled("input")({
@@ -43,7 +45,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-// Form validation schema
+// ----- 1) Use z.nativeEnum(Category) -----
 const reimbursementSchema = z.object({
   amount: z
     .number({
@@ -56,11 +58,12 @@ const reimbursementSchema = z.object({
       required_error: "Description is required",
     })
     .min(5, "Description must be at least 5 characters"),
-  category: z
-    .string({
-      required_error: "Category is required",
-    })
-    .min(1, "Category is required"),
+
+  // category must be one of the Category enum values
+  category: z.nativeEnum(Category, {
+    required_error: "Category is required",
+  }),
+
   street: z
     .string({
       required_error: "Street address is required",
@@ -88,17 +91,10 @@ const reimbursementSchema = z.object({
 
 type ReimbursementFormData = z.infer<typeof reimbursementSchema>;
 
-const categories = [
-  "Travel",
-  "Food",
-  "Equipment",
-  "Software",
-  "Marketing",
-  "Supplies",
-  "Other",
-  "50502",
-];
+// ----- 2) Generate dropdown options from the Category enum -----
+const categories = Object.values(Category);
 
+// We’ll use a simple step array for the Stepper
 const steps = ["Basic Information", "Address Details", "Receipt Upload"];
 
 export default function ReimbursementPage() {
@@ -132,9 +128,11 @@ export default function ReimbursementPage() {
         return { values: {}, errors: { _: { message: "Validation failed" } } };
       }
     },
+
+    // ----- 3) Provide a valid default value for category -----
     defaultValues: {
       amount: 0,
-      category: "",
+      category: Category.Food, // Or any other valid enum value
       description: "",
       street: "",
       city: "",
@@ -172,7 +170,7 @@ export default function ReimbursementPage() {
 
         await createFinanceWithForm.mutateAsync(formData);
       } else {
-        // This block should not be reachable because receipt is required
+        // This block should not be reached because receipt is required
         await createFinance.mutateAsync({
           ...data,
           submitterType: SubmitterType.ORGANIZER,
@@ -188,7 +186,7 @@ export default function ReimbursementPage() {
       setSubmitError(
         error instanceof Error
           ? error.message
-          : "Failed to submit reimbursement. Please try again.",
+          : "Failed to submit reimbursement. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -232,6 +230,7 @@ export default function ReimbursementPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Step 0: Basic Information */}
             {activeStep === 0 && (
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
@@ -297,6 +296,8 @@ export default function ReimbursementPage() {
                 </Grid>
               </Grid>
             )}
+
+            {/* Step 1: Address Details */}
             {activeStep === 1 && (
               <Grid container spacing={3}>
                 <Grid item xs={12}>
@@ -362,6 +363,7 @@ export default function ReimbursementPage() {
               </Grid>
             )}
 
+            {/* Step 2: Receipt Upload */}
             {activeStep === 2 && (
               <Controller
                 name="receipt"
@@ -399,6 +401,7 @@ export default function ReimbursementPage() {
               />
             )}
 
+            {/* Navigation buttons */}
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
             >
@@ -407,26 +410,33 @@ export default function ReimbursementPage() {
               </Button>
 
               <Box sx={{ display: "flex", gap: 2 }}>
-                <Button variant="contained" onClick={handleNext} type="button">
-                  Next
-                </Button>
-                <Button
-                  variant="contained"
-                  type="submit"
-                  disabled={
-                    isSubmitting || !isValid || activeStep !== steps.length - 1
-                  }
-                  color="primary"
-                >
-                  {isSubmitting && activeStep === steps.length - 1 ? (
-                    <>
-                      <CircularProgress size={20} sx={{ mr: 1 }} />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Submit Request"
-                  )}
-                </Button>
+                {activeStep < steps.length - 1 && (
+                  <Button
+                    variant="contained"
+                    onClick={handleNext}
+                    type="button"
+                  >
+                    Next
+                  </Button>
+                )}
+                {/* Only show 'Submit Request' on the last step */}
+                {activeStep === steps.length - 1 && (
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    disabled={isSubmitting || !isValid}
+                    color="primary"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Request"
+                    )}
+                  </Button>
+                )}
               </Box>
             </Box>
           </form>

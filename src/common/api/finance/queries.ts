@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { FinanceEntity, Status } from "./entity";
 import { apiFetch } from "../axios";
-import { FinanceEntity } from "./entity";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export async function getAllFinances(): Promise<FinanceEntity[]> {
   return apiFetch<FinanceEntity[]>("/finances", {
@@ -18,7 +18,7 @@ export async function createFinance(
   data: Omit<
     FinanceEntity,
     "id" | "createdAt" | "hackathonId" | "updatedBy" | "receiptUrl" | "status"
-  >,
+  >
 ): Promise<FinanceEntity> {
   return apiFetch<FinanceEntity>("/finances", {
     method: "POST",
@@ -27,7 +27,7 @@ export async function createFinance(
 }
 
 export async function createFinanceWithForm(
-  formData: FormData,
+  formData: FormData
 ): Promise<FinanceEntity> {
   return apiFetch<FinanceEntity>("/finances", {
     method: "POST",
@@ -35,9 +35,13 @@ export async function createFinanceWithForm(
   });
 }
 
-export async function getCheque(id: string): Promise<Blob> {
-  return apiFetch<Blob>(`/finances/${id}/cheque`, {
-    method: "GET",
+export async function updateFinanceStatus(
+  id: string,
+  status: Status
+): Promise<FinanceEntity> {
+  return apiFetch<FinanceEntity>(`/finances/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
   });
 }
 
@@ -49,7 +53,7 @@ export const financeKeys = {
   cheque: (id: string) => [...financeKeys.all, id, "cheque"] as const,
 };
 
-// Query Hooks
+// Existing Query Hooks
 export function useAllFinances() {
   return useQuery<FinanceEntity[]>({
     queryKey: financeKeys.lists(),
@@ -87,7 +91,7 @@ export function useCreateFinance() {
         | "updatedBy"
         | "receiptUrl"
         | "status"
-      >,
+      >
     ) => createFinance(newData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: financeKeys.lists() });
@@ -101,6 +105,21 @@ export function useCreateFinanceWithForm() {
   return useMutation({
     mutationFn: (formData: FormData) => createFinanceWithForm(formData),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.lists() });
+    },
+  });
+}
+
+export function useUpdateFinanceStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    // Receives an object: { id, status }, or you can pass them separately
+    mutationFn: async ({ id, status }: { id: string; status: Status }) => {
+      return updateFinanceStatus(id, status);
+    },
+    onSuccess: () => {
+      // Re-fetch the entire finances list so UI is up to date
       queryClient.invalidateQueries({ queryKey: financeKeys.lists() });
     },
   });

@@ -1,8 +1,11 @@
-// components/Reimbursements.tsx
 "use client";
-
 import React, { useEffect, useState } from "react";
-import { FinanceEntity, Status, useAllFinances } from "@/common/api/finance";
+import {
+  FinanceEntity,
+  Status,
+  useAllFinances,
+  useUpdateFinanceStatus,
+} from "@/common/api/finance";
 import {
   DataTable,
   TableColumn,
@@ -12,7 +15,8 @@ import { StatusCell } from "@/components/DataTable/StatusCell";
 // MUI components for the snackbar
 import { Snackbar, Alert, Box, Typography } from "@mui/material";
 
-function Reimbursements() {
+
+export default function Reimbursements() {
   const [finances, setFinances] = useState<FinanceEntity[]>([]);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -20,7 +24,7 @@ function Reimbursements() {
     severity: "success" | "error";
   } | null>(null);
 
-  // Fetch finances when the component mounts
+  // 1) Fetch all finances via your query
   const { data, error } = useAllFinances();
   useEffect(() => {
     if (data) {
@@ -35,27 +39,36 @@ function Reimbursements() {
     }
   }, [data, error]);
 
-  // Handler for status change (Functionality to be implemented later)
-  const handleStatusChange = (
-    rowId: string,
-    newStatus: FinanceEntity["status"],
-  ) => {
-    // Placeholder for future implementation
-    console.log(`Change status of row ${rowId} to ${newStatus}`);
-    // Example: Update the state locally (Optional)
-    setFinances((prevFinances) =>
-      prevFinances.map((finance) =>
-        finance.id === rowId ? { ...finance, status: newStatus } : finance,
-      ),
+  // 2) Obtain the mutation function for patching status
+  const updateFinanceStatus = useUpdateFinanceStatus();
+
+  // 3) Handler for changing status
+  const handleStatusChange = (rowId: string, newStatus: FinanceEntity["status"]) => {
+    // Here we call the mutation, passing in { id: ..., status: ... }
+    updateFinanceStatus.mutate(
+      { id: rowId, status: newStatus },
+      {
+        onSuccess: () => {
+          // Show a success message in the Snackbar
+          setSnackbar({
+            open: true,
+            message: `Status updated to ${newStatus}`,
+            severity: "success",
+          });
+        },
+        onError: (err: Error) => {
+          // Show an error message if the mutation fails
+          setSnackbar({
+            open: true,
+            message: err?.message || "Error updating status",
+            severity: "error",
+          });
+        },
+      },
     );
-    setSnackbar({
-      open: true,
-      message: `Status updated to ${newStatus}`,
-      severity: "success",
-    });
   };
 
-  // Define the columns for the DataTable, matching only the desired FinanceEntity fields
+  // Define the columns for the DataTable
   const columns: TableColumn<FinanceEntity>[] = [
     {
       id: "submitterId",
@@ -66,7 +79,7 @@ function Reimbursements() {
       id: "amount",
       label: "Amount",
       sortable: true,
-      render: (row) => `$${row.amount.toFixed(2)}`, // Format amount as currency
+      render: (row) => `$${row.amount.toFixed(2)}`,
     },
     {
       id: "description",
@@ -82,19 +95,16 @@ function Reimbursements() {
       id: "status",
       label: "Status",
       sortable: true,
-      render: (row: { status: Status; id: string }) => (
+      render: (row) => (
         <StatusCell
           status={row.status}
-          onChange={(newStatus: Status) =>
-            handleStatusChange(row.id, newStatus)
-          }
+          onChange={(newStatus) => handleStatusChange(row.id, newStatus)}
         />
       ),
     },
     {
       id: "receiptUrl",
       label: "Receipt",
-      // Custom render for the receipt link
       render: (row) =>
         row.receiptUrl ? (
           <a href={row.receiptUrl} target="_blank" rel="noopener noreferrer">
@@ -112,7 +122,6 @@ function Reimbursements() {
         Reimbursements
       </Typography>
 
-      {/* Reusable DataTable example */}
       <DataTable
         columns={columns}
         data={finances}
@@ -141,5 +150,3 @@ function Reimbursements() {
     </Box>
   );
 }
-
-export default Reimbursements;
