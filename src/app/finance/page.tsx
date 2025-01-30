@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import {
   FinanceEntity,
-  Status,
   useAllFinances,
   useUpdateFinanceStatus,
 } from "@/common/api/finance";
