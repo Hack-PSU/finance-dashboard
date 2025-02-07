@@ -14,21 +14,17 @@ import { StatusCell } from "@/components/DataTable/StatusCell";
 // MUI components for the snackbar
 import { Snackbar, Alert, Box, Typography } from "@mui/material";
 
-
 export default function Reimbursements() {
-  const [finances, setFinances] = useState<FinanceEntity[]>([]);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: "success" | "error";
   } | null>(null);
 
-  // 1) Fetch all finances via your query
-  const { data, error } = useAllFinances();
+  // Fetch all finances using the React Query hook
+  const { data: finances, error } = useAllFinances();
+
   useEffect(() => {
-    if (data) {
-      setFinances(data);
-    }
     if (error) {
       setSnackbar({
         open: true,
@@ -36,19 +32,20 @@ export default function Reimbursements() {
         severity: "error",
       });
     }
-  }, [data, error]);
+  }, [error]);
 
-  // 2) Obtain the mutation function for patching status
-  const updateFinanceStatus = useUpdateFinanceStatus();
+  // Obtain the mutation function for updating the finance status
+  const updateFinanceStatusMutation = useUpdateFinanceStatus();
 
-  // 3) Handler for changing status
-  const handleStatusChange = (rowId: string, newStatus: FinanceEntity["status"]) => {
-    // Here we call the mutation, passing in { id: ..., status: ... }
-    updateFinanceStatus.mutate(
-      { id: rowId, status: newStatus },
+  // Handler for changing status
+  const handleStatusChange = (
+    rowId: string,
+    newStatus: FinanceEntity["status"]
+  ) => {
+    updateFinanceStatusMutation.mutate(
+      { id: rowId, data: { status: newStatus } },
       {
         onSuccess: () => {
-          // Show a success message in the Snackbar
           setSnackbar({
             open: true,
             message: `Status updated to ${newStatus}`,
@@ -56,14 +53,13 @@ export default function Reimbursements() {
           });
         },
         onError: (err: Error) => {
-          // Show an error message if the mutation fails
           setSnackbar({
             open: true,
             message: err?.message || "Error updating status",
             severity: "error",
           });
         },
-      },
+      }
     );
   };
 
@@ -123,7 +119,7 @@ export default function Reimbursements() {
 
       <DataTable
         columns={columns}
-        data={finances}
+        data={finances || []} // if finances isn't loaded yet, pass an empty array
         getRowId={(row) => row.id}
         searchPlaceholder="Search Finance Items..."
         maxHeight={600}

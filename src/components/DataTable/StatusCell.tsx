@@ -21,6 +21,7 @@ const statusColors: Record<Status, string> = {
   APPROVED: "#4CAF50", // Green
   PENDING: "#FF9800", // Orange
   REJECTED: "#F44336", // Red
+  DEPOSIT: "#000000" // Black, (unsupported)
 };
 
 // Styled FormControl to apply dynamic border color

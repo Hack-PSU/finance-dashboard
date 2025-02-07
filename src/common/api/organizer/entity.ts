@@ -13,6 +13,6 @@ export interface OrganizerEntity {
   firstName: string;
   lastName: string;
   privilege: Role;
-  judgingLocation: string;
-  award: string;
+  judgingLocation?: string;
+  award?: string;
 }

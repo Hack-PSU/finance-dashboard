@@ -27,12 +27,10 @@ import {
   Status,
   SubmitterType,
   useCreateFinance,
-  useCreateFinanceWithForm,
+  Category,
 } from "@/common/api/finance";
 
-import { Category } from "@/common/api/finance";
-
-// Custom styled components
+// Custom styled component for visually hiding the file input
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -45,7 +43,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-// ----- 1) Use z.nativeEnum(Category) -----
+// ----- 1) Define the zod schema using z.nativeEnum for category -----
 const reimbursementSchema = z.object({
   amount: z
     .number({
@@ -58,12 +56,10 @@ const reimbursementSchema = z.object({
       required_error: "Description is required",
     })
     .min(5, "Description must be at least 5 characters"),
-
   // category must be one of the Category enum values
   category: z.nativeEnum(Category, {
     required_error: "Category is required",
   }),
-
   street: z
     .string({
       required_error: "Street address is required",
@@ -94,7 +90,7 @@ type ReimbursementFormData = z.infer<typeof reimbursementSchema>;
 // ----- 2) Generate dropdown options from the Category enum -----
 const categories = Object.values(Category);
 
-// We’ll use a simple step array for the Stepper
+// A simple step array for the Stepper
 const steps = ["Basic Information", "Address Details", "Receipt Upload"];
 
 export default function ReimbursementPage() {
@@ -128,11 +124,10 @@ export default function ReimbursementPage() {
         return { values: {}, errors: { _: { message: "Validation failed" } } };
       }
     },
-
     // ----- 3) Provide a valid default value for category -----
     defaultValues: {
       amount: 0,
-      category: Category.Food, // Or any other valid enum value
+      category: Category.Food,
       description: "",
       street: "",
       city: "",
@@ -143,8 +138,8 @@ export default function ReimbursementPage() {
     mode: "onChange",
   });
 
+  // Use the updated create finance hook (which accepts FormData)
   const createFinance = useCreateFinance();
-  const createFinanceWithForm = useCreateFinanceWithForm();
 
   const onSubmit = async (data: ReimbursementFormData) => {
     if (!user?.uid) {
@@ -156,27 +151,19 @@ export default function ReimbursementPage() {
       setIsSubmitting(true);
       setSubmitError(null);
 
-      if (data.receipt) {
-        const formData = new FormData();
-        formData.append("receipt", data.receipt);
-        Object.entries(data).forEach(([key, value]) => {
-          if (key !== "receipt") {
-            formData.append(key, String(value));
-          }
-        });
-        formData.append("submitterType", SubmitterType.ORGANIZER);
-        formData.append("submitterId", user.uid);
-        formData.append("status", Status.PENDING);
+      // Always build a FormData instance since receipt is required
+      const formData = new FormData();
+      formData.append("receipt", data.receipt);
+      Object.entries(data).forEach(([key, value]) => {
+        if (key !== "receipt") {
+          formData.append(key, String(value));
+        }
+      });
+      formData.append("submitterType", SubmitterType.ORGANIZER);
+      formData.append("submitterId", user.uid);
+      formData.append("status", Status.PENDING);
 
-        await createFinanceWithForm.mutateAsync(formData);
-      } else {
-        // This block should not be reached because receipt is required
-        await createFinance.mutateAsync({
-          ...data,
-          submitterType: SubmitterType.ORGANIZER,
-          submitterId: user.uid,
-        });
-      }
+      await createFinance.mutateAsync(formData);
 
       setSubmitSuccess(true);
       reset();
@@ -250,7 +237,9 @@ export default function ReimbursementPage() {
                             <InputAdornment position="start">$</InputAdornment>
                           ),
                         }}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        onChange={(e) =>
+                          field.onChange(Number(e.target.value))
+                        }
                       />
                     )}
                   />
@@ -393,7 +382,7 @@ export default function ReimbursementPage() {
                     )}
                     {errors.receipt && (
                       <Typography variant="body2" color="error">
-                        {errors.receipt.message}
+                        {errors.receipt.message as string}
                       </Typography>
                     )}
                   </Box>
@@ -419,7 +408,6 @@ export default function ReimbursementPage() {
                     Next
                   </Button>
                 )}
-                {/* Only show 'Submit Request' on the last step */}
                 {activeStep === steps.length - 1 && (
                   <Button
                     variant="contained"

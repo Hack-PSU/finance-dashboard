@@ -1,27 +1,25 @@
-import { EventType } from "@/common/api/event";
-
-interface CountsResponse {
+export interface CountsResponse {
   count: number;
 }
 
-interface RegistrationCounts extends CountsResponse {
+export interface RegistrationCounts extends CountsResponse {
   id: string;
   name: string;
 }
 
-interface GenderCounts extends CountsResponse {
+export interface GenderCounts extends CountsResponse {
   gender: string;
 }
 
-interface RaceCounts extends CountsResponse {
+export interface RaceCounts extends CountsResponse {
   race: string;
 }
 
-interface AcademicYearCounts extends CountsResponse {
+export interface AcademicYearCounts extends CountsResponse {
   academicYear: string;
 }
 
-interface CodingExpCounts extends CountsResponse {
+export interface CodingExpCounts extends CountsResponse {
   codingExperience: string;
 }
 
@@ -33,16 +31,16 @@ export interface AnalyticsSummaryResponse {
   codingExp: CodingExpCounts[];
 }
 
-export interface AnalyticsEventsResponse {
-  id: string;
-  name: string;
-  type: EventType;
-  count: number;
-}
-
 export interface AnalyticsScansResponse {
   id: string;
   firstName: string;
   lastName: string;
+  count: number;
+}
+
+export interface AnalyticsEventsResponse {
+  type: string;
+  id: string;
+  name: string;
   count: number;
 }

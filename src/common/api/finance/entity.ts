@@ -1,13 +1,13 @@
-// Import or define enums and interfaces
-export enum SubmitterType {
-  USER = "USER",
-  ORGANIZER = "ORGANIZER",
-}
-
 export enum Status {
   PENDING = "PENDING",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
+  DEPOSIT = "DEPOSIT",
+}
+
+export enum SubmitterType {
+  USER = "USER",
+  ORGANIZER = "ORGANIZER",
 }
 
 export enum Category {
@@ -53,8 +53,6 @@ export enum Category {
   SpecialFunction = "Special Function",
   CollegianAd = "Collegian Ad",
   Banner = "Banner",
-
-  // UPAC FUNDED
   HonorariaSpeaker = "Honoraria - Speaker",
   HonorariaDj = "Honoraria - DJ",
   HonorariaPerformingArtist = "Honoraria - Performing Artist",
@@ -77,32 +75,42 @@ export enum Category {
   ProgramProps = "Program - Props",
   ProgramCopyrightLicensing = "Program - Copyright/Licensing",
   GeneralOperations50 = "General Operations ($50)",
-
-  // TRAVEL
   TravelTransportation = "Travel - Transportation",
   TravelLodging = "Travel - Lodging",
   TravelRegistration = "Travel - Registration",
   TravelMeal = "Travel - Meal",
   TravelConference = "Travel - Conference",
-
-  // REFUND
   Refund = "Refund",
 }
 
 export interface FinanceEntity {
   id: string;
-  submitterId: string;
-  submitterType: SubmitterType;
   amount: number;
+  status: Status;
+  submitterType: SubmitterType;
+  submitterId: string;
+  receiptUrl?: string;
+  hackathonId: string;
+  description: string;
+  category: Category;
+  createdAt: number;
+  updatedBy?: string;
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+}
+
+export interface FinanceCreateEntity {
+  amount: number;
+  submitterType: SubmitterType;
+  submitterId: string;
   description: string;
   category: Category;
   street: string;
   city: string;
   state: string;
   postalCode: string;
-  status: Status;
-  receiptUrl?: string;
-  createdAt: number;
-  hackathonId: string;
-  updatedBy: string;
 }
+
+export type FinancePatchEntity = Partial<Pick<FinanceEntity, "status">>;
