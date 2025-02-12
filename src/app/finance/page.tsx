@@ -13,6 +13,8 @@ import { StatusCell } from "@/components/DataTable/StatusCell";
 
 // MUI components for the snackbar
 import { Snackbar, Alert, Box, Typography } from "@mui/material";
+import { useAllUsers,} from "@/common/api/user";
+import { useAllOrganizers } from "@/common/api/organizer";
 
 export default function Reimbursements() {
   const [snackbar, setSnackbar] = useState<{
@@ -23,6 +25,38 @@ export default function Reimbursements() {
 
   // Fetch all finances using the React Query hook
   const { data: finances, error } = useAllFinances();
+  
+  
+  const {data: usersData} = useAllUsers();  // Get user Data
+  const {data: organizerData} = useAllOrganizers(); // Get organizer Data
+
+  // Created a function which will return a dic with a name (value) associated with the submitterId (key)
+  function getNames({financeData}: {financeData: FinanceEntity[]}) {
+    if (!usersData || !organizerData) return{}; // Data was not available, return empty object
+
+    // Dictionary for mapping
+    const usersMap: Record<string, string> = {};
+
+    financeData.forEach((finance) => {
+      //Get the user's id or organizers id 
+      const user = usersData.find((u) => u.id === finance.submitterId);
+      const organizer = organizerData.find((o) => o.id === finance.submitterId);
+      //Map the user's/organizer's name to the submitter id
+      if (user) {
+        usersMap[finance.submitterId] = user.firstName + " " + user.lastName ;
+      } else if (organizer) {
+        usersMap[finance.submitterId] = organizer.firstName + " " + organizer.lastName;
+      } else {
+        usersMap[finance.submitterId] = "Unknown"; // Default if no match is found
+      }
+    });
+    
+    return usersMap;
+  }
+  //Map the submitterID to a name 
+  const usersMapping = finances ? getNames({ financeData: finances }) : {};
+
+
 
   useEffect(() => {
     if (error) {
@@ -69,6 +103,8 @@ export default function Reimbursements() {
       id: "submitterId",
       label: "Submitter",
       sortable: true,
+      // change what gets shown on each row
+      render: (row) => usersMapping[row.submitterId] || "Unknown"
     },
     {
       id: "amount",
