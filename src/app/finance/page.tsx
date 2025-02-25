@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FinanceEntity,
   useAllFinances,
@@ -13,7 +13,7 @@ import { StatusCell } from "@/components/DataTable/StatusCell";
 
 // MUI components for the snackbar
 import { Snackbar, Alert, Box, Typography } from "@mui/material";
-import { useAllUsers,} from "@/common/api/user";
+import { useAllUsers } from "@/common/api/user";
 import { useAllOrganizers } from "@/common/api/organizer";
 
 export default function Reimbursements() {
@@ -25,38 +25,40 @@ export default function Reimbursements() {
 
   // Fetch all finances using the React Query hook
   const { data: finances, error } = useAllFinances();
-  
-  
-  const {data: usersData} = useAllUsers();  // Get user Data
-  const {data: organizerData} = useAllOrganizers(); // Get organizer Data
 
-  // Created a function which will return a dic with a name (value) associated with the submitterId (key)
-  function getNames({financeData}: {financeData: FinanceEntity[]}) {
-    if (!usersData || !organizerData) return{}; // Data was not available, return empty object
+  const { data: usersData } = useAllUsers();
+  const { data: organizerData } = useAllOrganizers();
 
-    // Dictionary for mapping
-    const usersMap: Record<string, string> = {};
+  const submitterNames = useMemo(() => {
+    if (!usersData || !organizerData) return {};
 
-    financeData.forEach((finance) => {
-      //Get the user's id or organizers id 
-      const user = usersData.find((u) => u.id === finance.submitterId);
-      const organizer = organizerData.find((o) => o.id === finance.submitterId);
-      //Map the user's/organizer's name to the submitter id
-      if (user) {
-        usersMap[finance.submitterId] = user.firstName + " " + user.lastName ;
-      } else if (organizer) {
-        usersMap[finance.submitterId] = organizer.firstName + " " + organizer.lastName;
-      } else {
-        usersMap[finance.submitterId] = "Unknown"; // Default if no match is found
+    const namesMap: Record<string, string> = {};
+
+    usersData.forEach((user) => {
+      namesMap[user.id] = `${user.firstName} ${user.lastName}`;
+    });
+
+    organizerData.forEach((organizer) => {
+      if (!namesMap[organizer.id]) {
+        namesMap[organizer.id] = `${organizer.firstName} ${organizer.lastName}`;
       }
     });
-    
-    return usersMap;
-  }
-  //Map the submitterID to a name 
-  const usersMapping = finances ? getNames({ financeData: finances }) : {};
 
+    return namesMap;
+  }, [usersData, organizerData]);
 
+  const usersMapping = useMemo(() => {
+    if (!finances) return {};
+
+    return finances.reduce(
+      (acc, finance) => {
+        acc[finance.submitterId] =
+          submitterNames[finance.submitterId] || "Unknown";
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+  }, [finances, submitterNames]);
 
   useEffect(() => {
     if (error) {
@@ -74,7 +76,7 @@ export default function Reimbursements() {
   // Handler for changing status
   const handleStatusChange = (
     rowId: string,
-    newStatus: FinanceEntity["status"]
+    newStatus: FinanceEntity["status"],
   ) => {
     updateFinanceStatusMutation.mutate(
       { id: rowId, data: { status: newStatus } },
@@ -93,7 +95,7 @@ export default function Reimbursements() {
             severity: "error",
           });
         },
-      }
+      },
     );
   };
 
@@ -103,8 +105,7 @@ export default function Reimbursements() {
       id: "submitterId",
       label: "Submitter",
       sortable: true,
-      // change what gets shown on each row
-      render: (row) => usersMapping[row.submitterId] || "Unknown"
+      render: (row) => usersMapping[row.submitterId] || "Unknown",
     },
     {
       id: "amount",
