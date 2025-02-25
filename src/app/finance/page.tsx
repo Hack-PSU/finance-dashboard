@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FinanceEntity,
   useAllFinances,
@@ -13,6 +13,8 @@ import { StatusCell } from "@/components/DataTable/StatusCell";
 
 // MUI components for the snackbar
 import { Snackbar, Alert, Box, Typography } from "@mui/material";
+import { useAllUsers } from "@/common/api/user";
+import { useAllOrganizers } from "@/common/api/organizer";
 
 export default function Reimbursements() {
   const [snackbar, setSnackbar] = useState<{
@@ -23,6 +25,40 @@ export default function Reimbursements() {
 
   // Fetch all finances using the React Query hook
   const { data: finances, error } = useAllFinances();
+
+  const { data: usersData } = useAllUsers();
+  const { data: organizerData } = useAllOrganizers();
+
+  const submitterNames = useMemo(() => {
+    if (!usersData || !organizerData) return {};
+
+    const namesMap: Record<string, string> = {};
+
+    usersData.forEach((user) => {
+      namesMap[user.id] = `${user.firstName} ${user.lastName}`;
+    });
+
+    organizerData.forEach((organizer) => {
+      if (!namesMap[organizer.id]) {
+        namesMap[organizer.id] = `${organizer.firstName} ${organizer.lastName}`;
+      }
+    });
+
+    return namesMap;
+  }, [usersData, organizerData]);
+
+  const usersMapping = useMemo(() => {
+    if (!finances) return {};
+
+    return finances.reduce(
+      (acc, finance) => {
+        acc[finance.submitterId] =
+          submitterNames[finance.submitterId] || "Unknown";
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+  }, [finances, submitterNames]);
 
   useEffect(() => {
     if (error) {
@@ -40,7 +76,7 @@ export default function Reimbursements() {
   // Handler for changing status
   const handleStatusChange = (
     rowId: string,
-    newStatus: FinanceEntity["status"]
+    newStatus: FinanceEntity["status"],
   ) => {
     updateFinanceStatusMutation.mutate(
       { id: rowId, data: { status: newStatus } },
@@ -59,7 +95,7 @@ export default function Reimbursements() {
             severity: "error",
           });
         },
-      }
+      },
     );
   };
 
@@ -69,6 +105,7 @@ export default function Reimbursements() {
       id: "submitterId",
       label: "Submitter",
       sortable: true,
+      render: (row) => usersMapping[row.submitterId] || "Unknown",
     },
     {
       id: "amount",

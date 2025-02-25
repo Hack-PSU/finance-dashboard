@@ -173,7 +173,7 @@ export default function ReimbursementPage() {
       setSubmitError(
         error instanceof Error
           ? error.message
-          : "Failed to submit reimbursement. Please try again."
+          : "Failed to submit reimbursement. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -237,9 +237,7 @@ export default function ReimbursementPage() {
                             <InputAdornment position="start">$</InputAdornment>
                           ),
                         }}
-                        onChange={(e) =>
-                          field.onChange(Number(e.target.value))
-                        }
+                        onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     )}
                   />
