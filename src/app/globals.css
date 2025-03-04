@@ -1,22 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --background: #ffffff;
-  --foreground: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ededed;
-    --foreground: #ededed;
-  }
+  /* ChatGPT-like dark theme colors */
+  --background-primary: #343541;
+  --background-secondary: #444654;
+  --text-primary: #FFFFFF;
+  --text-secondary: #C5C5D2;
+  --accent-primary: #10A37F;
+  --accent-hover: #1A7F64;
+  --border-color: #4A4B53;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: "Poppins", "Arial", sans-serif;
+  color: var(--text-primary);
+  background: var(--background-primary);
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 700;
 }

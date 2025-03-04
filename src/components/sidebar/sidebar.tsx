@@ -23,7 +23,6 @@ export default function TemporaryDrawer({
 }: TemporaryDrawerProps) {
   const menuItems = [
     { text: "Finance", path: "/finance" },
-    { text: "Analytics", path: "/analytics" },
     { text: "Reimbursement", path: "/reimbursement" },
     { text: "Login", path: "/login" },
   ];
@@ -33,35 +32,62 @@ export default function TemporaryDrawer({
   };
 
   const DrawerList = (
-    <Box sx={{ width: 250 }} role="presentation">
-      <List>
-        {menuItems.map((item, index) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              component={Link}
-              href={item.path}
-              onClick={handleToggleDrawer(false)}
-            >
-              <ListItemIcon>
-                {index == 0 ? (
-                  <MoneyIcon />
-                ) : index == 1 ? (
-                  <AnalyticsIcon />
-                ) : (
-                  <LoginIcon />
-                )}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
+    <Drawer 
+      anchor="left" 
+      open={open} 
+      onClose={handleToggleDrawer(false)}
+      PaperProps={{
+        sx: {
+          backgroundColor: 'var(--background-secondary)',
+          borderRight: '1px solid var(--border-color)',
+          width: 280
+        }
+      }}
+    >
+      <Box sx={{ width: 280 }} role="presentation">
+        <List>
+          {menuItems.map((item, index) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                onClick={handleToggleDrawer(false)}
+                sx={{
+                  py: 2,
+                  '&:hover': {
+                    backgroundColor: 'var(--accent-primary)',
+                    '& .MuiListItemIcon-root, & .MuiListItemText-primary': {
+                      color: 'var(--text-primary)'
+                    }
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ color: 'var(--text-secondary)' }}>
+                  {index == 0 ? (
+                    <MoneyIcon />
+                  ) : index == 1 ? (
+                    <LoginIcon />
+                  ) : null}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text} 
+                  sx={{ 
+                    '& .MuiListItemText-primary': {
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.95rem',
+                      fontWeight: 500
+                    }
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+    </Drawer>
   );
 
   return (
-    <Drawer open={open} onClose={handleToggleDrawer(false)}>
-      {DrawerList}
-    </Drawer>
+    DrawerList
   );
 }
