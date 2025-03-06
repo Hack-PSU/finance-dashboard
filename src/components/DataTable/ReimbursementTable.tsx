@@ -139,7 +139,7 @@ export function DataTable<T extends object>({
   };
 
   return (
-    <Box>
+    <Box sx={{ width: "100%" }}>
       {/* Optional title or heading */}
       <Typography
         variant="h6"
@@ -167,7 +167,12 @@ export function DataTable<T extends object>({
         />
       </Box>
 
-      <Paper className="rounded-md overflow-hidden bg-white shadow-md">
+      <Paper
+        sx={{
+          backgroundColor: "var(--background-secondary)",
+          color: "var(--text-primary)",
+        }}
+      >
         <TableContainer
           className={`max-h-${typeof maxHeight === "number" ? maxHeight / 16 : maxHeight} overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200`}
         >
@@ -177,15 +182,32 @@ export function DataTable<T extends object>({
                 {columns.map((col) => (
                   <TableCell
                     key={String(col.id)}
-                    className="font-bold bg-gray-700 text-white border-b-2 border-gray-200"
+                    sx={{
+                      backgroundColor: "var(--background-secondary)",
+                      color: "var(--text-primary)",
+                      borderBottom: "1px solid var(--border-color)",
+                      fontWeight: 600,
+                    }}
                   >
-                    {/* If sortable, wrap the label in a TableSortLabel */}
                     {col.sortable ? (
                       <TableSortLabel
                         active={sortColumn === col.id}
                         direction={sortColumn === col.id ? sortOrder : "asc"}
                         onClick={() => handleSort(col.id)}
-                        className="text-white"
+                        sx={{
+                          "&.MuiTableSortLabel-root": {
+                            color: "var(--text-primary)",
+                          },
+                          "&.MuiTableSortLabel-root:hover": {
+                            color: "var(--text-primary)",
+                          },
+                          "&.Mui-active": {
+                            color: "var(--accent-primary)",
+                          },
+                          "& .MuiTableSortLabel-icon": {
+                            color: "var(--accent-primary)",
+                          },
+                        }}
                       >
                         {col.label}
                       </TableSortLabel>
@@ -202,7 +224,15 @@ export function DataTable<T extends object>({
                 paginatedData.map((row) => (
                   <TableRow
                     key={getRowId(row)}
-                    className="even:bg-gray-100 hover:bg-gray-200"
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "var(--background-primary)",
+                      },
+                      "& td": {
+                        color: "var(--text-primary)",
+                        borderBottom: "1px solid var(--border-color)",
+                      },
+                    }}
                   >
                     {columns.map((col) => (
                       <TableCell
@@ -233,7 +263,14 @@ export function DataTable<T extends object>({
         </TableContainer>
 
         {/* Pagination controls */}
-        <Box className="flex justify-end items-center px-4 py-2 bg-gray-100">
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            backgroundColor: "var(--background-secondary)",
+            padding: "8px",
+          }}
+        >
           <TablePagination
             component="div"
             count={filteredSortedData.length}
@@ -242,14 +279,17 @@ export function DataTable<T extends object>({
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            labelRowsPerPage="Rows per page:"
-            className="text-gray-800"
-            classes={{
-              root: "bg-gray-100",
-              toolbar: "flex justify-between",
-              selectLabel: "text-gray-800",
-              select: "text-gray-800",
-              menuItem: "text-gray-800",
+            sx={{
+              color: "var(--text-primary)",
+              "& .MuiTablePagination-select": {
+                color: "var(--text-primary)",
+              },
+              "& .MuiTablePagination-selectIcon": {
+                color: "var(--text-primary)",
+              },
+              "& .MuiTablePagination-displayedRows": {
+                color: "var(--text-primary)",
+              },
             }}
           />
         </Box>

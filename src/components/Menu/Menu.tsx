@@ -20,14 +20,27 @@ export default function ButtonAppBar({ toggleDrawer }: ButtonAppBarProps) {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar sx={{ backgroundColor: "#64646429" }} position="static">
+      <AppBar
+        sx={{
+          backgroundColor: "var(--background-secondary)",
+          borderBottom: "1px solid var(--border-color)",
+          boxShadow: "none",
+        }}
+        position="static"
+      >
         <Toolbar>
           <IconButton
             size="large"
             edge="start"
-            color="inherit"
             aria-label="menu"
-            sx={{ mr: 2, color: "black" }}
+            sx={{
+              mr: 2,
+              color: "var(--text-secondary)",
+              "&:hover": {
+                backgroundColor: "var(--accent-primary)",
+                color: "var(--text-primary)",
+              },
+            }}
             onClick={handleToggleDrawer(true)}
           >
             <MenuIcon />
@@ -36,9 +49,15 @@ export default function ButtonAppBar({ toggleDrawer }: ButtonAppBarProps) {
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, color: "black", ml: 3 }}
+            sx={{
+              flexGrow: 1,
+              color: "var(--text-primary)",
+              ml: 3,
+              fontSize: "1.1rem",
+              letterSpacing: "0.5px",
+            }}
           >
-            Finance Dashbaord
+            Finance Dashboard
           </Typography>
         </Toolbar>
       </AppBar>

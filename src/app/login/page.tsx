@@ -58,7 +58,8 @@ export default function Login() {
               {...field}
               type={showPassword ? "text" : "password"}
               placeholder="Password"
-              className="w-full px-4 py-2 border rounded mt-2 text-black"
+              className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color)] rounded text-[var(--text-primary)] placeholder-[var(--text-secondary)]
+              focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)]"
               required
               aria-label="Password"
             />
@@ -94,8 +95,8 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-200">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-lg">
+    <div className="flex items-center justify-center min-h-screen bg-[var(--background-primary)]">
+      <div className="w-full max-w-md p-8 space-y-6 bg-[var(--background-secondary)] rounded-lg border border-[var(--border-color)]">
         {user ? (
           <>
             <h2 className="text-2xl font-bold text-center text-green-600">
@@ -130,7 +131,8 @@ export default function Login() {
                         id="email"
                         type="email"
                         placeholder="Email Address"
-                        className="w-full px-4 py-2 border rounded text-black"
+                        className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color)] rounded text-[var(--text-primary)] placeholder-[var(--text-secondary)]
+                        focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)]"
                         required
                         autoFocus
                         aria-invalid={!!loginError}
@@ -151,7 +153,8 @@ export default function Login() {
                 )}
                 <button
                   type="submit"
-                  className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  className="w-full py-2 px-4 bg-[var(--accent-primary)] text-white rounded hover:bg-[var(--accent-hover)] 
+                    transition-colors duration-200 disabled:opacity-50"
                   disabled={isProcessing}
                 >
                   {isProcessing ? "Signing In..." : "Sign In"}
