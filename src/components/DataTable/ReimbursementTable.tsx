@@ -139,7 +139,7 @@ export function DataTable<T extends object>({
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: "100%" }}>
       {/* Optional title or heading */}
       <Typography
         variant="h6"
@@ -167,10 +167,10 @@ export function DataTable<T extends object>({
         />
       </Box>
 
-      <Paper 
-        sx={{ 
-          backgroundColor: 'var(--background-secondary)',
-          color: 'var(--text-primary)',
+      <Paper
+        sx={{
+          backgroundColor: "var(--background-secondary)",
+          color: "var(--text-primary)",
         }}
       >
         <TableContainer
@@ -183,10 +183,10 @@ export function DataTable<T extends object>({
                   <TableCell
                     key={String(col.id)}
                     sx={{
-                      backgroundColor: 'var(--background-secondary)',
-                      color: 'var(--text-primary)',
-                      borderBottom: '1px solid var(--border-color)',
-                      fontWeight: 600
+                      backgroundColor: "var(--background-secondary)",
+                      color: "var(--text-primary)",
+                      borderBottom: "1px solid var(--border-color)",
+                      fontWeight: 600,
                     }}
                   >
                     {col.sortable ? (
@@ -195,17 +195,17 @@ export function DataTable<T extends object>({
                         direction={sortColumn === col.id ? sortOrder : "asc"}
                         onClick={() => handleSort(col.id)}
                         sx={{
-                          '&.MuiTableSortLabel-root': {
-                            color: 'var(--text-primary)',
+                          "&.MuiTableSortLabel-root": {
+                            color: "var(--text-primary)",
                           },
-                          '&.MuiTableSortLabel-root:hover': {
-                            color: 'var(--text-primary)',
+                          "&.MuiTableSortLabel-root:hover": {
+                            color: "var(--text-primary)",
                           },
-                          '&.Mui-active': {
-                            color: 'var(--accent-primary)',
+                          "&.Mui-active": {
+                            color: "var(--accent-primary)",
                           },
-                          '& .MuiTableSortLabel-icon': {
-                            color: 'var(--accent-primary)',
+                          "& .MuiTableSortLabel-icon": {
+                            color: "var(--accent-primary)",
                           },
                         }}
                       >
@@ -225,13 +225,13 @@ export function DataTable<T extends object>({
                   <TableRow
                     key={getRowId(row)}
                     sx={{
-                      '&:hover': {
-                        backgroundColor: 'var(--background-primary)',
+                      "&:hover": {
+                        backgroundColor: "var(--background-primary)",
                       },
-                      '& td': {
-                        color: 'var(--text-primary)',
-                        borderBottom: '1px solid var(--border-color)',
-                      }
+                      "& td": {
+                        color: "var(--text-primary)",
+                        borderBottom: "1px solid var(--border-color)",
+                      },
                     }}
                   >
                     {columns.map((col) => (
@@ -263,12 +263,14 @@ export function DataTable<T extends object>({
         </TableContainer>
 
         {/* Pagination controls */}
-        <Box sx={{ 
-          display: 'flex',
-          justifyContent: 'flex-end',
-          backgroundColor: 'var(--background-secondary)',
-          padding: '8px'
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            backgroundColor: "var(--background-secondary)",
+            padding: "8px",
+          }}
+        >
           <TablePagination
             component="div"
             count={filteredSortedData.length}
@@ -278,15 +280,15 @@ export function DataTable<T extends object>({
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
             sx={{
-              color: 'var(--text-primary)',
-              '& .MuiTablePagination-select': {
-                color: 'var(--text-primary)',
+              color: "var(--text-primary)",
+              "& .MuiTablePagination-select": {
+                color: "var(--text-primary)",
               },
-              '& .MuiTablePagination-selectIcon': {
-                color: 'var(--text-primary)',
+              "& .MuiTablePagination-selectIcon": {
+                color: "var(--text-primary)",
               },
-              '& .MuiTablePagination-displayedRows': {
-                color: 'var(--text-primary)',
+              "& .MuiTablePagination-displayedRows": {
+                color: "var(--text-primary)",
               },
             }}
           />

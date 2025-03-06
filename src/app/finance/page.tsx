@@ -150,13 +150,13 @@ export default function Reimbursements() {
 
   return (
     <Box sx={{ padding: "1rem" }}>
-      <Typography 
-        variant="h4" 
-        sx={{ 
-          mb: 4, 
-          color: 'var(--accent-primary)',
+      <Typography
+        variant="h4"
+        sx={{
+          mb: 4,
+          color: "var(--accent-primary)",
           fontWeight: 700,
-          textAlign: 'center'
+          textAlign: "center",
         }}
       >
         Reimbursements

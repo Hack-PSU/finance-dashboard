@@ -18,7 +18,7 @@ interface StatusCellProps {
 
 // Define color mapping for each status
 const statusColors: Record<Status, string> = {
-  APPROVED: 'var(--accent-primary)', // Use theme accent color
+  APPROVED: "var(--accent-primary)", // Use theme accent color
   PENDING: "#FFA726",
   REJECTED: "#FF5252",
   DEPOSIT: "#000000", // Include DEPOSIT status even if not used in UI
@@ -28,10 +28,10 @@ const StyledFormControl = styled(FormControl)<{ status: Status }>(
   ({ status }) => ({
     minWidth: 120,
     "& .MuiInputLabel-root": {
-      color: 'var(--text-primary)',
+      color: "var(--text-primary)",
     },
     "& .MuiOutlinedInput-root": {
-      color: 'var(--text-primary)',
+      color: "var(--text-primary)",
       "& fieldset": {
         borderColor: statusColors[status],
       },
@@ -43,7 +43,7 @@ const StyledFormControl = styled(FormControl)<{ status: Status }>(
       },
     },
     "& .MuiSelect-icon": {
-      color: 'var(--text-primary)',
+      color: "var(--text-primary)",
     },
   }),
 );
@@ -68,13 +68,13 @@ export const StatusCell: React.FC<StatusCellProps> = ({ status, onChange }) => {
           MenuProps={{
             PaperProps: {
               sx: {
-                backgroundColor: 'var(--background-secondary)',
-                border: '1px solid var(--border-color)',
-              }
-            }
+                backgroundColor: "var(--background-secondary)",
+                border: "1px solid var(--border-color)",
+              },
+            },
           }}
           sx={{
-            color: 'var(--text-primary)',
+            color: "var(--text-primary)",
             "& .MuiOutlinedInput-input": {
               padding: "8px 10px",
             },
@@ -82,28 +82,28 @@ export const StatusCell: React.FC<StatusCellProps> = ({ status, onChange }) => {
               borderWidth: 2,
             },
             "& .MuiMenuItem-root": {
-              color: 'var(--text-primary)',
-              backgroundColor: 'var(--background-secondary)',
-              '&:hover': {
-                backgroundColor: 'var(--accent-primary)',
+              color: "var(--text-primary)",
+              backgroundColor: "var(--background-secondary)",
+              "&:hover": {
+                backgroundColor: "var(--accent-primary)",
               },
-              '&.Mui-selected': {
-                backgroundColor: 'var(--accent-primary)',
-                '&:hover': {
-                  backgroundColor: 'var(--accent-hover)',
-                }
-              }
-            }
+              "&.Mui-selected": {
+                backgroundColor: "var(--accent-primary)",
+                "&:hover": {
+                  backgroundColor: "var(--accent-hover)",
+                },
+              },
+            },
           }}
         >
-          <MenuItem 
-            value="APPROVED" 
-            sx={{ 
+          <MenuItem
+            value="APPROVED"
+            sx={{
               color: statusColors.APPROVED,
-              '&:hover': {
-                backgroundColor: 'var(--accent-primary)',
-                color: 'var(--text-primary)'
-              }
+              "&:hover": {
+                backgroundColor: "var(--accent-primary)",
+                color: "var(--text-primary)",
+              },
             }}
           >
             Approved

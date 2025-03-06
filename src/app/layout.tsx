@@ -1,4 +1,4 @@
-import { Inter } from 'next/font/google';
+import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 import SideNavbar from "../components/DashboardLayout/DashboardLayout";
@@ -8,9 +8,9 @@ import { ThemeProvider } from "@mui/material";
 import theme from "@/theme";
 
 const inter = Inter({
-  subsets: ['latin'],
-  weight: ['700'], // This ensures we load the Bold weight
-  variable: '--font-inter',
+  subsets: ["latin"],
+  weight: ["700"], // This ensures we load the Bold weight
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {

@@ -6,11 +6,11 @@
   /* ChatGPT-like dark theme colors */
   --background-primary: #343541;
   --background-secondary: #444654;
-  --text-primary: #FFFFFF;
-  --text-secondary: #C5C5D2;
-  --accent-primary: #10A37F;
-  --accent-hover: #1A7F64;
-  --border-color: #4A4B53;
+  --text-primary: #ffffff;
+  --text-secondary: #c5c5d2;
+  --accent-primary: #10a37f;
+  --accent-hover: #1a7f64;
+  --border-color: #4a4b53;
 }
 
 body {

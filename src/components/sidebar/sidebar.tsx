@@ -7,7 +7,6 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import AnalyticsIcon from "@mui/icons-material/Analytics";
 import MoneyIcon from "@mui/icons-material/AttachMoney";
 import LoginIcon from "@mui/icons-material/Login";
 import Link from "next/link";
@@ -32,16 +31,16 @@ export default function TemporaryDrawer({
   };
 
   const DrawerList = (
-    <Drawer 
-      anchor="left" 
-      open={open} 
+    <Drawer
+      anchor="left"
+      open={open}
       onClose={handleToggleDrawer(false)}
       PaperProps={{
         sx: {
-          backgroundColor: 'var(--background-secondary)',
-          borderRight: '1px solid var(--border-color)',
-          width: 280
-        }
+          backgroundColor: "var(--background-secondary)",
+          borderRight: "1px solid var(--border-color)",
+          width: 280,
+        },
       }}
     >
       <Box sx={{ width: 280 }} role="presentation">
@@ -54,29 +53,29 @@ export default function TemporaryDrawer({
                 onClick={handleToggleDrawer(false)}
                 sx={{
                   py: 2,
-                  '&:hover': {
-                    backgroundColor: 'var(--accent-primary)',
-                    '& .MuiListItemIcon-root, & .MuiListItemText-primary': {
-                      color: 'var(--text-primary)'
-                    }
-                  }
+                  "&:hover": {
+                    backgroundColor: "var(--accent-primary)",
+                    "& .MuiListItemIcon-root, & .MuiListItemText-primary": {
+                      color: "var(--text-primary)",
+                    },
+                  },
                 }}
               >
-                <ListItemIcon sx={{ color: 'var(--text-secondary)' }}>
+                <ListItemIcon sx={{ color: "var(--text-secondary)" }}>
                   {index == 0 ? (
                     <MoneyIcon />
                   ) : index == 1 ? (
                     <LoginIcon />
                   ) : null}
                 </ListItemIcon>
-                <ListItemText 
-                  primary={item.text} 
-                  sx={{ 
-                    '& .MuiListItemText-primary': {
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.95rem',
-                      fontWeight: 500
-                    }
+                <ListItemText
+                  primary={item.text}
+                  sx={{
+                    "& .MuiListItemText-primary": {
+                      color: "var(--text-secondary)",
+                      fontSize: "0.95rem",
+                      fontWeight: 500,
+                    },
                   }}
                 />
               </ListItemButton>
@@ -87,7 +86,5 @@ export default function TemporaryDrawer({
     </Drawer>
   );
 
-  return (
-    DrawerList
-  );
+  return DrawerList;
 }
