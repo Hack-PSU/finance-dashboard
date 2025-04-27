@@ -13,21 +13,13 @@ import { StatusCell } from "@/components/DataTable/StatusCell";
 
 // MUI components for the snackbar
 import { Snackbar, Alert, Box, Typography } from "@mui/material";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useAllUsers } from "@/common/api/user";
 import { useAllOrganizers } from "@/common/api/organizer";
-import { MenuItem, Select, FormControl, InputLabel, ListItemText, Checkbox, OutlinedInput } from "@mui/material";
-import { Chip, Stack, FormControlLabel } from "@mui/material";
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  ExpandMore,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
-import { Drawer, IconButton } from "@mui/material";
+import { Checkbox } from "@mui/material";
+import { Stack, FormControlLabel } from "@mui/material";
+import { Drawer, IconButton, Button, TextField } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import FirstPageIcon from '@mui/icons-material/FirstPage';
 
 export default function Reimbursements() {
   const [snackbar, setSnackbar] = useState<{
@@ -38,18 +30,15 @@ export default function Reimbursements() {
 
   const [selectedSubmitterTypes, setSelectedSubmitterTypes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [minAmount, setMinAmount] = useState<string>("");
+  const [maxAmount, setMaxAmount] = useState<string>("");
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleSubmitterTypeChange = (type: string) => {
-    setSelectedSubmitterTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    );
-  };
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+  const handleStatusChangeFilter = (status: string) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
     );
   };
 
@@ -190,9 +179,18 @@ export default function Reimbursements() {
       const matchesCategory =
         selectedCategories.length === 0 || selectedCategories.includes(f.category);
 
-      return matchesType && matchesCategory;
+      const matchesStatus =
+        selectedStatuses.length === 0 || selectedStatuses.includes(f.status);
+
+      const matchesMinAmount =
+        minAmount === "" || f.amount >= parseFloat(minAmount);
+
+      const matchesMaxAmount =
+        maxAmount === "" || f.amount <= parseFloat(maxAmount);
+
+      return matchesType && matchesCategory && matchesStatus && matchesMinAmount && matchesMaxAmount;
     });
-  }, [finances, organizerData, selectedSubmitterTypes, selectedCategories]);
+  }, [finances, organizerData, selectedSubmitterTypes, selectedCategories, selectedStatuses, minAmount, maxAmount]);
 
   return (
     <Box sx={{ padding: "1rem" }}>
@@ -208,24 +206,22 @@ export default function Reimbursements() {
         Reimbursements
       </Typography>
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-        <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: "white" }}>
-          <FilterListIcon />
-        </IconButton>
-      </Box>
-
       <Drawer
-        anchor="right"
+        anchor="left"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         PaperProps={{
           sx: { backgroundColor: "#121212", color: "white", width: 300, padding: 2 },
         }}
       >
-        <Typography variant="h5" sx={{ mb: 2 }}>
-          Filters
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Typography variant="h5">Filters</Typography>
+          <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: "white" }}>
+            <FirstPageIcon />
+          </IconButton>
+        </Box>
         <hr style={{ borderColor: 'white', marginBottom: '16px' }} />
+
         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
           Submitter Type
         </Typography>
@@ -253,7 +249,7 @@ export default function Reimbursements() {
         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
           Category
         </Typography>
-        <Stack>
+        <Stack sx={{ mb: 3 }}>
           {Array.from(new Set(finances?.map((f) => f.category) || [])).map((category) => (
             <FormControlLabel
               key={category}
@@ -269,10 +265,70 @@ export default function Reimbursements() {
                 />
               }
               label={category}
-              sx={{ color: "white" }}
+              sx={{ color: "white"}}
             />
           ))}
         </Stack>
+
+        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+          Status
+        </Typography>
+        <Stack sx={{ mb: 3 }}>
+          {["PENDING", "APPROVED", "REJECTED"].map((status) => (
+            <FormControlLabel
+              key={status}
+              control={
+                <Checkbox
+                  checked={selectedStatuses.includes(status)}
+                  onChange={() => handleStatusChangeFilter(status)}
+                  sx={{ color: "white" }}
+                />
+              }
+              label={status.charAt(0) + status.slice(1).toLowerCase()}
+              sx={{ color: "white"}}
+            />
+          ))}
+        </Stack>
+
+        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+          Amount Range
+        </Typography>
+        <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+          <TextField
+            label="Min"
+            variant="outlined"
+            size="small"
+            value={minAmount}
+            onChange={(e) => setMinAmount(e.target.value)}
+            sx={{ input: { color: "white" }, label: { color: "white" }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'white' }, '&:hover fieldset': { borderColor: 'white' }, '&.Mui-focused fieldset': { borderColor: 'white' } } }}
+            type="number"
+            inputProps={{ min: 0, step: "0.01" }}
+          />
+          <TextField
+            label="Max"
+            variant="outlined"
+            size="small"
+            value={maxAmount}
+            onChange={(e) => setMaxAmount(e.target.value)}
+            sx={{ input: { color: "white" }, label: { color: "white" }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'white' }, '&:hover fieldset': { borderColor: 'white' }, '&.Mui-focused fieldset': { borderColor: 'white' } } }}
+            type="number"
+            inputProps={{ min: 0, step: "0.01" }}
+          />
+        </Stack>
+
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setSelectedSubmitterTypes([]);
+            setSelectedCategories([]);
+            setSelectedStatuses([]);
+            setMinAmount("");
+            setMaxAmount("");
+          }}
+          sx={{ color: "white", borderColor: "white" }}
+        >
+          Reset Filters
+        </Button>
       </Drawer>
 
       <DataTable
@@ -281,6 +337,11 @@ export default function Reimbursements() {
         getRowId={(row) => row.id}
         searchPlaceholder="Search Finance Items..."
         maxHeight={600}
+        startAdornment={
+          <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: "white" }}>
+            <FilterListIcon />
+          </IconButton>
+        }
       />
 
       {/* Snackbar for notifications */}
