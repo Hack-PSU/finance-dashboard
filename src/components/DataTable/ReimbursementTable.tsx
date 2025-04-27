@@ -42,6 +42,8 @@ interface DataTableProps<T> {
   searchPlaceholder?: string;
   /** Maximum height for the scrollable table. */
   maxHeight?: string | number;
+  /** Optional element to render before the search input */
+  startAdornment?: React.ReactNode;
 }
 
 /**
@@ -57,6 +59,7 @@ export function DataTable<T extends object>({
   getRowId,
   searchPlaceholder = "Search…",
   maxHeight = 600,
+  startAdornment,
 }: DataTableProps<T>) {
   // Local states for search and sorting
   const [searchTerm, setSearchTerm] = useState("");
@@ -148,23 +151,30 @@ export function DataTable<T extends object>({
         Data Table
       </Typography>
 
-      {/* Search box */}
-      <Box className="mb-4">
-        <TextField
-          size="small"
-          variant="outlined"
-          fullWidth
-          placeholder={searchPlaceholder}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-          InputProps={{
-            className: "text-gray-800",
-          }}
-          InputLabelProps={{
-            className: "text-gray-800",
-          }}
-        />
+      {/* Search box with optional startAdornment */}
+      <Box className="mb-4" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {startAdornment && (
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {startAdornment}
+          </Box>
+        )}
+        <Box sx={{ flexGrow: 1 }}>
+          <TextField
+            size="small"
+            variant="outlined"
+            fullWidth
+            placeholder={searchPlaceholder}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+            InputProps={{
+              className: "text-gray-800",
+            }}
+            InputLabelProps={{
+              className: "text-gray-800",
+            }}
+          />
+        </Box>
       </Box>
 
       <Paper
