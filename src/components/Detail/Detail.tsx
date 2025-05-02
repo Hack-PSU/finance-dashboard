@@ -36,7 +36,7 @@ export default function ReimbursementDetail({
   id,
 }: {
   id: string;
-}): JSX.Element {
+}): React.JSX.Element {
   const router = useRouter();
   const { data: finance, isLoading, error } = useFinance(id);
   const patchMutation = usePatchFinance();

@@ -44,7 +44,7 @@ function SubmitterCell({ id, type }: { id: string; type: SubmitterType }) {
   }
 }
 
-export default function Reimbursements(): JSX.Element {
+export default function Reimbursements(): React.JSX.Element {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{

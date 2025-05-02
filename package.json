@@ -38,7 +38,7 @@
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.62.1",
     "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0",
+    "@types/react": "^19.1.2",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "15.2.4",
