@@ -1,12 +1,8 @@
-// app/components/Reimbursements/index.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import type {
-  Status,
-  Category,
-  SubmitterType,
-} from "@/common/api/finance/entity";
+import { useRouter } from "next/navigation";
+import { Status, Category, SubmitterType } from "@/common/api/finance/entity";
 import {
   FinanceEntity,
   useAllFinances,
@@ -17,11 +13,39 @@ import {
   TableColumn,
 } from "@/components/DataTable/ReimbursementTable";
 import { StatusCell } from "@/components/DataTable/StatusCell";
-import { FilterList as FilterListIcon } from "@mui/icons-material";
+import {
+  FilterList as FilterListIcon,
+  Edit as EditIcon,
+} from "@mui/icons-material";
 import { IconButton, Snackbar, Alert } from "@mui/material";
 import { FilterDrawer } from "@/components/FilterDrawer/FilterDrawer";
+import { useUser } from "@/common/api/user";
+import { useOrganizer } from "@/common/api/organizer";
 
-export default function Reimbursements() {
+// Cell component to display submitter's name based on their type
+function SubmitterCell({ id, type }: { id: string; type: SubmitterType }) {
+  const { data: user, isLoading: userLoading, error: userError } = useUser(id);
+  const {
+    data: organizer,
+    isLoading: orgLoading,
+    error: orgError,
+  } = useOrganizer(id);
+
+  if (orgLoading || userLoading) return <span>Loading...</span>;
+  if (orgError && userError) return <span>{id}</span>;
+
+  if (type === SubmitterType.USER) {
+    if (!user) return <span>{id}</span>;
+    return <>{`${user.firstName} ${user.lastName}`}</>;
+  }
+  if (type === SubmitterType.ORGANIZER) {
+    if (!organizer) return <span>{id}</span>;
+    return <>{`${organizer.firstName} ${organizer.lastName}`}</>;
+  }
+}
+
+export default function Reimbursements(): JSX.Element {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -34,8 +58,8 @@ export default function Reimbursements() {
   >([]);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
-  const [minAmount, setMinAmount] = useState("");
-  const [maxAmount, setMaxAmount] = useState("");
+  const [minAmount, setMinAmount] = useState<string>("");
+  const [maxAmount, setMaxAmount] = useState<string>("");
 
   const { data: finances, error } = useAllFinances();
   const updateMutation = useUpdateFinanceStatus();
@@ -66,12 +90,15 @@ export default function Reimbursements() {
     );
   };
 
+  // Define columns, now using SubmitterCell for the Submitter column
   const columns: TableColumn<FinanceEntity>[] = [
     {
       id: "submitterId",
       label: "Submitter",
       sortable: true,
-      render: (r) => r.submitterId,
+      render: (r) => (
+        <SubmitterCell id={r.submitterId} type={r.submitterType} />
+      ),
     },
     {
       id: "amount",
@@ -109,8 +136,23 @@ export default function Reimbursements() {
           "—"
         ),
     },
+    {
+      id: "id",
+      label: "Actions",
+      render: (r) => (
+        <IconButton
+          size="small"
+          aria-label="Edit reimbursement"
+          className="text-[#F25C54]"
+          onClick={() => router.push(`/finance/${r.id}`)}
+        >
+          <EditIcon fontSize="small" />
+        </IconButton>
+      ),
+    },
   ];
 
+  // Apply filtering
   const filtered = useMemo(() => {
     return (finances || []).filter((f) => {
       const byType =
@@ -145,7 +187,6 @@ export default function Reimbursements() {
     setSelectedStatuses((prev) =>
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
     );
-
   const resetFilters = () => {
     setSelectedSubmitterTypes([]);
     setSelectedCategories([]);
@@ -180,7 +221,7 @@ export default function Reimbursements() {
         columns={columns}
         data={filtered}
         getRowId={(r) => r.id}
-        searchPlaceholder="Search finance items..."
+        searchPlaceholder="Search finance items by description, amount, type or status"
         maxHeight={600}
         startAdornment={
           <IconButton
@@ -199,11 +240,7 @@ export default function Reimbursements() {
           onClose={() => setSnackbar(null)}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <Alert
-            onClose={() => setSnackbar(null)}
-            severity={snackbar.severity}
-            className="font-medium"
-          >
+          <Alert onClose={() => setSnackbar(null)} severity={snackbar.severity}>
             {snackbar.message}
           </Alert>
         </Snackbar>

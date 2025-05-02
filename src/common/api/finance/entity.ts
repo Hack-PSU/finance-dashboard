@@ -113,4 +113,17 @@ export interface FinanceCreateEntity {
   postalCode: string;
 }
 
-export type FinancePatchEntity = Partial<Pick<FinanceEntity, "status">>;
+export type FinanceStatusPatchEntity = Partial<Pick<FinanceEntity, "status">>;
+
+export type FinancePatchEntity = Partial<
+  Pick<
+    FinanceEntity,
+    | "amount"
+    | "description"
+    | "category"
+    | "street"
+    | "city"
+    | "state"
+    | "postalCode"
+  >
+>;
