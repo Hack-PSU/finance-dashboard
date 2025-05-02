@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import ButtonAppBar from "../Menu/Menu";
-import TemporaryDrawer from "../Sidebar/Sidebar";
+import TemporaryDrawer from "@/components/Sidebar";
 
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
