@@ -1,11 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import ButtonAppBar from "../Menu/Menu";
-import dynamic from "next/dynamic";
-
-const TemporaryDrawer = dynamic(() => import("../sidebar/sidebar"), {
-  ssr: false,
-});
+import TemporaryDrawer from "@/components/Sidebar";
 
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);

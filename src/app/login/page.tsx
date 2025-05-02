@@ -1,3 +1,4 @@
+// app/components/Login.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -24,15 +25,10 @@ export default function Login() {
     setLoginError("");
     try {
       await loginWithEmailAndPassword(data.email, data.password);
-    } catch (error) {
-      let errorMessage = "";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else {
-        errorMessage = String(error);
-      }
-      console.error(error);
-      setLoginError(errorMessage);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(err);
+      setLoginError(msg);
     }
     setProcessing(false);
   };
@@ -44,10 +40,7 @@ export default function Login() {
     name: keyof FormData;
     control: Control<FormData>;
   }) => {
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-
-    const toggleShowPassword = () => setShowPassword((prev) => !prev);
-
+    const [show, setShow] = useState(false);
     return (
       <Controller
         name={name}
@@ -56,20 +49,19 @@ export default function Login() {
           <div className="relative">
             <input
               {...field}
-              type={showPassword ? "text" : "password"}
+              type={show ? "text" : "password"}
               placeholder="Password"
-              className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color)] rounded text-[var(--text-primary)] placeholder-[var(--text-secondary)]
-              focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full px-3 py-2 border-2 border-gray-200 rounded-md placeholder-gray-400 
+                         focus:outline-none focus:ring-2 focus:ring-[#F25C54]"
               required
-              aria-label="Password"
             />
             <button
               type="button"
+              onClick={() => setShow((s) => !s)}
               className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-600"
-              onClick={toggleShowPassword}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={show ? "Hide password" : "Show password"}
             >
-              {showPassword ? "Hide" : "Show"}
+              {show ? "Hide" : "Show"}
             </button>
           </div>
         )}
@@ -77,43 +69,33 @@ export default function Login() {
     );
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
-
-  // Ensure that authentication state is loaded before rendering
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-200">
-        <div className="text-xl text-gray-700">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <span className="text-xl text-gray-700">Loading…</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[var(--background-primary)]">
-      <div className="w-full max-w-md p-8 space-y-6 bg-[var(--background-secondary)] rounded-lg border border-[var(--border-color)]">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-sm border border-gray-200 space-y-6">
         {user ? (
           <>
-            <h2 className="text-2xl font-bold text-center text-green-600">
+            <h2 className="text-3xl font-bold text-center text-green-600">
               Success
             </h2>
-            <p className="text-green-600 text-center">You are now logged in.</p>
+            <p className="text-center text-green-600">You are now logged in.</p>
             <button
-              type="button"
-              className="w-full py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700 mt-4"
-              onClick={handleLogout}
+              onClick={logout}
+              className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-md transition"
             >
               Log Out
             </button>
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold text-center text-black">
+            <h2 className="text-3xl font-bold text-center text-[#F25C54]">
               Sign In
             </h2>
             <FormProvider {...methods}>
@@ -123,41 +105,36 @@ export default function Login() {
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label htmlFor="email" className="sr-only">
-                        Email Address
-                      </label>
                       <input
                         {...field}
-                        id="email"
                         type="email"
                         placeholder="Email Address"
-                        className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color)] rounded text-[var(--text-primary)] placeholder-[var(--text-secondary)]
-                        focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)]"
+                        className="w-full px-3 py-2 border-2 border-gray-200 rounded-md placeholder-gray-400
+                                   focus:outline-none focus:ring-2 focus:ring-[#F25C54]"
                         required
                         autoFocus
-                        aria-invalid={!!loginError}
-                        aria-describedby="email-error"
                       />
                     </div>
                   )}
                 />
+
                 <PasswordInput name="password" control={control} />
+
                 {loginError && (
-                  <div
-                    id="email-error"
-                    className="text-red-500 text-sm mt-2 text-center"
-                    role="alert"
-                  >
+                  <p className="text-red-500 text-sm text-center" role="alert">
                     {loginError}
-                  </div>
+                  </p>
                 )}
+
                 <button
                   type="submit"
-                  className="w-full py-2 px-4 bg-[var(--accent-primary)] text-white rounded hover:bg-[var(--accent-hover)] 
-                    transition-colors duration-200 disabled:opacity-50"
                   disabled={isProcessing}
+                  className="w-full py-2 px-4 font-medium text-white rounded-md 
+                             bg-gradient-to-r from-pink-500 to-orange-400
+                             hover:from-pink-600 hover:to-orange-500
+                             transition-colors disabled:opacity-50"
                 >
-                  {isProcessing ? "Signing In..." : "Sign In"}
+                  {isProcessing ? "Signing In…" : "Sign In"}
                 </button>
               </form>
             </FormProvider>

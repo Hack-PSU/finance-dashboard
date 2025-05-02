@@ -1,66 +1,35 @@
+// components/Layout/Header.tsx
 "use client";
-import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import Logo from "../../../public/android-chrome-512x512.png";
-import Image from "next/image";
 
-interface ButtonAppBarProps {
+import React from "react";
+import Link from "next/link";
+import MenuIcon from "@mui/icons-material/Menu";
+import Image from "next/image";
+import Logo from "../../../public/android-chrome-512x512.png";
+
+interface HeaderProps {
   toggleDrawer: (state: "open" | "close") => void;
 }
 
-export default function ButtonAppBar({ toggleDrawer }: ButtonAppBarProps) {
-  const handleToggleDrawer = (open: boolean) => () => {
-    toggleDrawer(open ? "open" : "close");
-  };
+export default function Header({ toggleDrawer }: HeaderProps) {
+  const openDrawer = () => toggleDrawer("open");
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar
-        sx={{
-          backgroundColor: "var(--background-secondary)",
-          borderBottom: "1px solid var(--border-color)",
-          boxShadow: "none",
-        }}
-        position="static"
+    <header className="flex items-center bg-white border-b border-gray-200 px-4 h-16">
+      <button
+        onClick={openDrawer}
+        aria-label="Open menu"
+        className="p-2 mr-3 rounded hover:bg-[#F25C54] hover:bg-opacity-10 transition"
       >
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            aria-label="menu"
-            sx={{
-              mr: 2,
-              color: "var(--text-secondary)",
-              "&:hover": {
-                backgroundColor: "var(--accent-primary)",
-                color: "var(--text-primary)",
-              },
-            }}
-            onClick={handleToggleDrawer(true)}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Image src={Logo} alt="Logo" width="40" height="40" />
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{
-              flexGrow: 1,
-              color: "var(--text-primary)",
-              ml: 3,
-              fontSize: "1.1rem",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Finance Dashboard
-          </Typography>
-        </Toolbar>
-      </AppBar>
-    </Box>
+        <MenuIcon className="w-6 h-6 text-gray-700 hover:text-[#F25C54]" />
+      </button>
+
+      <Link href="/" className="flex items-center">
+        <Image src={Logo} alt="Logo" width={40} height={40} />
+        <span className="ml-3 text-lg font-bold text-[#F25C54]">
+          Finance Dashboard
+        </span>
+      </Link>
+    </header>
   );
 }

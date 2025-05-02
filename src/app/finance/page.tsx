@@ -1,5 +1,12 @@
+// app/components/Reimbursements/index.tsx
 "use client";
+
 import React, { useEffect, useMemo, useState } from "react";
+import type {
+  Status,
+  Category,
+  SubmitterType,
+} from "@/common/api/finance/entity";
 import {
   FinanceEntity,
   useAllFinances,
@@ -10,55 +17,28 @@ import {
   TableColumn,
 } from "@/components/DataTable/ReimbursementTable";
 import { StatusCell } from "@/components/DataTable/StatusCell";
-
-// MUI components for the snackbar
-import { Snackbar, Alert, Box, Typography } from "@mui/material";
-import { useAllUsers } from "@/common/api/user";
-import { useAllOrganizers } from "@/common/api/organizer";
+import { FilterList as FilterListIcon } from "@mui/icons-material";
+import { IconButton, Snackbar, Alert } from "@mui/material";
+import { FilterDrawer } from "@/components/FilterDrawer/FilterDrawer";
 
 export default function Reimbursements() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: "success" | "error";
   } | null>(null);
 
-  // Fetch all finances using the React Query hook
+  const [selectedSubmitterTypes, setSelectedSubmitterTypes] = useState<
+    SubmitterType[]
+  >([]);
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+
   const { data: finances, error } = useAllFinances();
-
-  const { data: usersData } = useAllUsers();
-  const { data: organizerData } = useAllOrganizers();
-
-  const submitterNames = useMemo(() => {
-    if (!usersData || !organizerData) return {};
-
-    const namesMap: Record<string, string> = {};
-
-    usersData.forEach((user) => {
-      namesMap[user.id] = `${user.firstName} ${user.lastName}`;
-    });
-
-    organizerData.forEach((organizer) => {
-      if (!namesMap[organizer.id]) {
-        namesMap[organizer.id] = `${organizer.firstName} ${organizer.lastName}`;
-      }
-    });
-
-    return namesMap;
-  }, [usersData, organizerData]);
-
-  const usersMapping = useMemo(() => {
-    if (!finances) return {};
-
-    return finances.reduce(
-      (acc, finance) => {
-        acc[finance.submitterId] =
-          submitterNames[finance.submitterId] || "Unknown";
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-  }, [finances, submitterNames]);
+  const updateMutation = useUpdateFinanceStatus();
 
   useEffect(() => {
     if (error) {
@@ -70,76 +50,59 @@ export default function Reimbursements() {
     }
   }, [error]);
 
-  // Obtain the mutation function for updating the finance status
-  const updateFinanceStatusMutation = useUpdateFinanceStatus();
-
-  // Handler for changing status
-  const handleStatusChange = (
-    rowId: string,
-    newStatus: FinanceEntity["status"],
-  ) => {
-    updateFinanceStatusMutation.mutate(
-      { id: rowId, data: { status: newStatus } },
+  const handleStatusUpdate = (id: string, newStatus: Status) => {
+    updateMutation.mutate(
+      { id, data: { status: newStatus } },
       {
-        onSuccess: () => {
+        onSuccess: () =>
           setSnackbar({
             open: true,
             message: `Status updated to ${newStatus}`,
             severity: "success",
-          });
-        },
-        onError: (err: Error) => {
-          setSnackbar({
-            open: true,
-            message: err?.message || "Error updating status",
-            severity: "error",
-          });
-        },
+          }),
+        onError: (e: Error) =>
+          setSnackbar({ open: true, message: e.message, severity: "error" }),
       },
     );
   };
 
-  // Define the columns for the DataTable
   const columns: TableColumn<FinanceEntity>[] = [
     {
       id: "submitterId",
       label: "Submitter",
       sortable: true,
-      render: (row) => usersMapping[row.submitterId] || "Unknown",
+      render: (r) => r.submitterId,
     },
     {
       id: "amount",
       label: "Amount",
       sortable: true,
-      render: (row) => `$${row.amount.toFixed(2)}`,
+      render: (r) => `$${r.amount.toFixed(2)}`,
     },
-    {
-      id: "description",
-      label: "Description",
-      sortable: true,
-    },
-    {
-      id: "category",
-      label: "Category",
-      sortable: true,
-    },
+    { id: "description", label: "Description", sortable: true },
+    { id: "category", label: "Category", sortable: true },
     {
       id: "status",
       label: "Status",
       sortable: true,
-      render: (row) => (
+      render: (r) => (
         <StatusCell
-          status={row.status}
-          onChange={(newStatus) => handleStatusChange(row.id, newStatus)}
+          status={r.status}
+          onChange={(s) => handleStatusUpdate(r.id, s)}
         />
       ),
     },
     {
       id: "receiptUrl",
       label: "Receipt",
-      render: (row) =>
-        row.receiptUrl ? (
-          <a href={row.receiptUrl} target="_blank" rel="noopener noreferrer">
+      render: (r) =>
+        r.receiptUrl ? (
+          <a
+            href={r.receiptUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#F25C54] hover:underline"
+          >
             View Receipt
           </a>
         ) : (
@@ -148,29 +111,87 @@ export default function Reimbursements() {
     },
   ];
 
+  const filtered = useMemo(() => {
+    return (finances || []).filter((f) => {
+      const byType =
+        !selectedSubmitterTypes.length ||
+        selectedSubmitterTypes.includes(f.submitterType);
+      const byCat =
+        !selectedCategories.length || selectedCategories.includes(f.category);
+      const byStatus =
+        !selectedStatuses.length || selectedStatuses.includes(f.status);
+      const byMin = !minAmount || f.amount >= parseFloat(minAmount);
+      const byMax = !maxAmount || f.amount <= parseFloat(maxAmount);
+      return byType && byCat && byStatus && byMin && byMax;
+    });
+  }, [
+    finances,
+    selectedSubmitterTypes,
+    selectedCategories,
+    selectedStatuses,
+    minAmount,
+    maxAmount,
+  ]);
+
+  const toggleType = (t: SubmitterType) =>
+    setSelectedSubmitterTypes((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t],
+    );
+  const toggleCat = (c: Category) =>
+    setSelectedCategories((prev) =>
+      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
+    );
+  const toggleStatus = (s: Status) =>
+    setSelectedStatuses((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
+    );
+
+  const resetFilters = () => {
+    setSelectedSubmitterTypes([]);
+    setSelectedCategories([]);
+    setSelectedStatuses([]);
+    setMinAmount("");
+    setMaxAmount("");
+  };
+
   return (
-    <Box sx={{ padding: "1rem" }}>
-      <Typography
-        variant="h4"
-        sx={{
-          mb: 4,
-          color: "var(--accent-primary)",
-          fontWeight: 700,
-          textAlign: "center",
-        }}
-      >
+    <div className="min-h-screen bg-gray-50 p-4">
+      <h2 className="text-3xl font-bold text-[#F25C54] text-center mb-8">
         Reimbursements
-      </Typography>
+      </h2>
+
+      <FilterDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        selectedSubmitterTypes={selectedSubmitterTypes}
+        selectedCategories={selectedCategories}
+        selectedStatuses={selectedStatuses}
+        minAmount={minAmount}
+        maxAmount={maxAmount}
+        onToggleSubmitterType={toggleType}
+        onToggleCategory={toggleCat}
+        onToggleStatus={toggleStatus}
+        onMinAmountChange={setMinAmount}
+        onMaxAmountChange={setMaxAmount}
+        onReset={resetFilters}
+      />
 
       <DataTable
         columns={columns}
-        data={finances || []} // if finances isn't loaded yet, pass an empty array
-        getRowId={(row) => row.id}
-        searchPlaceholder="Search Finance Items..."
+        data={filtered}
+        getRowId={(r) => r.id}
+        searchPlaceholder="Search finance items..."
         maxHeight={600}
+        startAdornment={
+          <IconButton
+            onClick={() => setDrawerOpen(true)}
+            className="text-gray-700 hover:text-[#F25C54] hover:bg-[#F25C54] hover:bg-opacity-10 rounded"
+          >
+            <FilterListIcon />
+          </IconButton>
+        }
       />
 
-      {/* Snackbar for notifications */}
       {snackbar && (
         <Snackbar
           open={snackbar.open}
@@ -181,12 +202,12 @@ export default function Reimbursements() {
           <Alert
             onClose={() => setSnackbar(null)}
             severity={snackbar.severity}
-            sx={{ width: "100%" }}
+            className="font-medium"
           >
             {snackbar.message}
           </Alert>
         </Snackbar>
       )}
-    </Box>
+    </div>
   );
 }
