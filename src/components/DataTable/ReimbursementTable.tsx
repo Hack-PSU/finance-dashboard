@@ -12,22 +12,13 @@ import {
   Paper,
   TableSortLabel,
   TextField,
-  Box,
   TablePagination,
-  Typography,
 } from "@mui/material";
 
 export type TableColumn<T> = {
-  /** Unique key for the column; also used for sorting if `sortable` is true. */
   id: keyof T;
-  /** Visible label for the column header. */
   label: string;
-  /** If true, user can click the header to sort by this column. */
   sortable?: boolean;
-  /**
-   * Optional custom cell rendering logic.
-   * By default, it just does `row[column.id]`.
-   */
   render?: (row: T) => React.ReactNode;
 };
 
@@ -36,23 +27,12 @@ type SortOrder = "asc" | "desc";
 interface DataTableProps<T> {
   columns: TableColumn<T>[];
   data: T[];
-  /** A function to uniquely identify each row (used as React key). */
   getRowId: (row: T) => string;
-  /** A placeholder for the search field. */
   searchPlaceholder?: string;
-  /** Maximum height for the scrollable table. */
   maxHeight?: string | number;
-  /** Optional element to render before the search input */
   startAdornment?: React.ReactNode;
 }
 
-/**
- * A reusable data table component that supports:
- * - Sorting by column (if `sortable` is set)
- * - Searching/filtering rows
- * - Sticky headers with a max table height
- * - Pagination with rows-per-page selection
- */
 export function DataTable<T extends object>({
   columns,
   data,
@@ -61,162 +41,84 @@ export function DataTable<T extends object>({
   maxHeight = 600,
   startAdornment,
 }: DataTableProps<T>) {
-  // Local states for search and sorting
   const [searchTerm, setSearchTerm] = useState("");
   const [sortColumn, setSortColumn] = useState<keyof T | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
-
-  // Pagination states
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  /**
-   * Handle user changing the sort by clicking the header.
-   * - If user clicks the same column, we toggle asc/desc.
-   * - Otherwise, we switch to that column in ascending order.
-   */
-  const handleSort = (columnId: keyof T) => {
-    if (sortColumn === columnId) {
-      setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+  const handleSort = (col: keyof T) => {
+    if (sortColumn === col) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
     } else {
-      setSortColumn(columnId);
+      setSortColumn(col);
       setSortOrder("asc");
     }
   };
 
-  /**
-   * Filter + sort the data based on user input and selection.
-   */
-  const filteredSortedData = useMemo(() => {
-    // 1) Filter by searchTerm
-    const filtered = data.filter((row) => {
-      // Convert entire row object to string for a naive search
-      const rowString = JSON.stringify(row).toLowerCase();
-      return rowString.includes(searchTerm.toLowerCase());
-    });
-
-    // 2) If no sortColumn, return filtered
-    if (!sortColumn) {
-      return filtered;
-    }
-
-    // 3) Sort by the selected column (asc or desc)
-    return [...filtered].sort((a, b) => {
-      const valA = a[sortColumn];
-      const valB = b[sortColumn];
-
-      // Handle different data types
-      if (typeof valA === "number" && typeof valB === "number") {
-        return sortOrder === "asc" ? valA - valB : valB - valA;
-      }
-
-      const stringA = String(valA).toLowerCase();
-      const stringB = String(valB).toLowerCase();
-
-      if (stringA < stringB) return sortOrder === "asc" ? -1 : 1;
-      if (stringA > stringB) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
+  const filtered = useMemo(() => {
+    const low = searchTerm.toLowerCase();
+    return data
+      .filter((row) => JSON.stringify(row).toLowerCase().includes(low))
+      .sort((a, b) => {
+        if (!sortColumn) return 0;
+        const aVal = a[sortColumn],
+          bVal = b[sortColumn];
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+        }
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
+        if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
   }, [data, searchTerm, sortColumn, sortOrder]);
 
-  /**
-   * Apply pagination to the filteredSortedData.
-   * This determines which rows are actually displayed on the current page.
-   */
-  const paginatedData = useMemo(() => {
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return filteredSortedData.slice(startIndex, endIndex);
-  }, [filteredSortedData, page, rowsPerPage]);
-
-  // Handlers for TablePagination
-  const handleChangePage = (_event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+  const paginated = useMemo(() => {
+    const start = page * rowsPerPage;
+    return filtered.slice(start, start + rowsPerPage);
+  }, [filtered, page, rowsPerPage]);
 
   return (
-    <Box sx={{ width: "100%" }}>
-      {/* Optional title or heading */}
-      <Typography
-        variant="h6"
-        className="mb-2 font-bold text-center text-lg sm:text-xl text-gray-800"
-      >
-        Data Table
-      </Typography>
+    <div className="w-full">
+      {/* Search */}
+      <div className="flex items-center mb-4 space-x-4">
+        {startAdornment && <div>{startAdornment}</div>}
+        <TextField
+          size="small"
+          variant="outlined"
+          placeholder={searchPlaceholder}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 border-2 border-gray-200 rounded-md bg-gray-100 px-3 py-2
+                     focus:outline-none focus:ring-2 focus:ring-[#F25C54]"
+          InputProps={{ className: "text-gray-800" }}
+        />
+      </div>
 
-      {/* Search box with optional startAdornment */}
-      <Box className="mb-4" sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        {startAdornment && (
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            {startAdornment}
-          </Box>
-        )}
-        <Box sx={{ flexGrow: 1 }}>
-          <TextField
-            size="small"
-            variant="outlined"
-            fullWidth
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-            InputProps={{
-              className: "text-gray-800",
-            }}
-            InputLabelProps={{
-              className: "text-gray-800",
-            }}
-          />
-        </Box>
-      </Box>
-
-      <Paper
-        sx={{
-          backgroundColor: "var(--background-secondary)",
-          color: "var(--text-primary)",
-        }}
-      >
+      {/* Table */}
+      <Paper className="bg-white rounded-lg shadow-sm overflow-hidden">
         <TableContainer
-          className={`max-h-${typeof maxHeight === "number" ? maxHeight / 16 : maxHeight} overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200`}
+          className={`max-h-[${typeof maxHeight === "number" ? maxHeight + "px" : maxHeight}] overflow-y-auto`}
         >
-          <Table aria-label="data table" stickyHeader>
+          <Table stickyHeader>
             <TableHead>
-              <TableRow>
+              <TableRow className="bg-gray-100">
                 {columns.map((col) => (
                   <TableCell
                     key={String(col.id)}
-                    sx={{
-                      backgroundColor: "var(--background-secondary)",
-                      color: "var(--text-primary)",
-                      borderBottom: "1px solid var(--border-color)",
-                      fontWeight: 600,
-                    }}
+                    className="py-3 px-4 text-left text-gray-700 font-semibold border-b border-gray-200"
                   >
                     {col.sortable ? (
                       <TableSortLabel
                         active={sortColumn === col.id}
                         direction={sortColumn === col.id ? sortOrder : "asc"}
                         onClick={() => handleSort(col.id)}
+                        className="text-gray-700"
                         sx={{
-                          "&.MuiTableSortLabel-root": {
-                            color: "var(--text-primary)",
-                          },
-                          "&.MuiTableSortLabel-root:hover": {
-                            color: "var(--text-primary)",
-                          },
-                          "&.Mui-active": {
-                            color: "var(--accent-primary)",
-                          },
-                          "& .MuiTableSortLabel-icon": {
-                            color: "var(--accent-primary)",
-                          },
+                          "&.Mui-active": { color: "#F25C54" },
+                          "& .MuiTableSortLabel-icon": { color: "#F25C54" },
                         }}
                       >
                         {col.label}
@@ -230,29 +132,17 @@ export function DataTable<T extends object>({
             </TableHead>
 
             <TableBody>
-              {paginatedData.length > 0 ? (
-                paginatedData.map((row) => (
-                  <TableRow
-                    key={getRowId(row)}
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: "var(--background-primary)",
-                      },
-                      "& td": {
-                        color: "var(--text-primary)",
-                        borderBottom: "1px solid var(--border-color)",
-                      },
-                    }}
-                  >
+              {paginated.length > 0 ? (
+                paginated.map((row) => (
+                  <TableRow key={getRowId(row)} className="hover:bg-gray-50">
                     {columns.map((col) => (
                       <TableCell
                         key={String(col.id)}
-                        className="border-b border-gray-200 text-gray-800"
+                        className="py-3 px-4 text-gray-800 border-b border-gray-200"
                       >
                         {col.render
                           ? col.render(row)
-                          : // Default: just show the raw data
-                            String(row[col.id] ?? "")}
+                          : String(row[col.id] ?? "")}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -261,8 +151,7 @@ export function DataTable<T extends object>({
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    align="center"
-                    className="py-4 text-gray-800"
+                    className="py-4 text-center text-gray-800"
                   >
                     No records found.
                   </TableCell>
@@ -272,38 +161,23 @@ export function DataTable<T extends object>({
           </Table>
         </TableContainer>
 
-        {/* Pagination controls */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            backgroundColor: "var(--background-secondary)",
-            padding: "8px",
-          }}
-        >
+        {/* Pagination */}
+        <div className="flex justify-end p-2 bg-white">
           <TablePagination
             component="div"
-            count={filteredSortedData.length}
+            count={filtered.length}
             page={page}
-            onPageChange={handleChangePage}
+            onPageChange={(_e, p) => setPage(p)}
             rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              color: "var(--text-primary)",
-              "& .MuiTablePagination-select": {
-                color: "var(--text-primary)",
-              },
-              "& .MuiTablePagination-selectIcon": {
-                color: "var(--text-primary)",
-              },
-              "& .MuiTablePagination-displayedRows": {
-                color: "var(--text-primary)",
-              },
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(+e.target.value);
+              setPage(0);
             }}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            className="text-gray-700"
           />
-        </Box>
+        </div>
       </Paper>
-    </Box>
+    </div>
   );
 }

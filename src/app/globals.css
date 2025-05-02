@@ -2,20 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* ChatGPT-like dark theme colors */
-  --background-primary: #343541;
-  --background-secondary: #444654;
-  --text-primary: #ffffff;
-  --text-secondary: #c5c5d2;
-  --accent-primary: #10a37f;
-  --accent-hover: #1a7f64;
-  --border-color: #4a4b53;
-}
-
 body {
-  color: var(--text-primary);
   background: var(--background-primary);
-  font-family: var(--font-inter), sans-serif;
-  font-weight: 700;
+  font-family: var(--font-inter);
 }

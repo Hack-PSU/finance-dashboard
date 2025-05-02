@@ -18,7 +18,7 @@ interface StatusCellProps {
 
 // Define color mapping for each status
 const statusColors: Record<Status, string> = {
-  APPROVED: "var(--accent-primary)", // Use theme accent color
+  APPROVED: "#4CAF50",
   PENDING: "#FFA726",
   REJECTED: "#FF5252",
   DEPOSIT: "#000000", // Include DEPOSIT status even if not used in UI
