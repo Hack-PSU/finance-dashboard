@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
+import type { Status, Category, SubmitterType } from "@/common/api/finance/entity";
 import {
   FinanceEntity,
   useAllFinances,
@@ -28,15 +29,15 @@ export default function Reimbursements() {
     severity: "success" | "error";
   } | null>(null);
 
-  const [selectedSubmitterTypes, setSelectedSubmitterTypes] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedSubmitterTypes, setSelectedSubmitterTypes] = useState<SubmitterType[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
   const [minAmount, setMinAmount] = useState<string>("");
   const [maxAmount, setMaxAmount] = useState<string>("");
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleStatusChangeFilter = (status: string) => {
+  const handleStatusChangeFilter = (status: Status) => {
     setSelectedStatuses((prev) =>
       prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
     );
@@ -174,13 +175,13 @@ export default function Reimbursements() {
         : "Participant";
 
       const matchesType =
-        selectedSubmitterTypes.length === 0 || selectedSubmitterTypes.includes(submitterType);
+        selectedSubmitterTypes.length === 0 || selectedSubmitterTypes.includes(submitterType as SubmitterType);
 
       const matchesCategory =
-        selectedCategories.length === 0 || selectedCategories.includes(f.category);
+        selectedCategories.length === 0 || selectedCategories.includes(f.category as Category);
 
       const matchesStatus =
-        selectedStatuses.length === 0 || selectedStatuses.includes(f.status);
+        selectedStatuses.length === 0 || selectedStatuses.includes(f.status as Status);
 
       const matchesMinAmount =
         minAmount === "" || f.amount >= parseFloat(minAmount);
@@ -226,7 +227,7 @@ export default function Reimbursements() {
           Submitter Type
         </Typography>
         <Stack sx={{ mb: 3 }}>
-          {["Organizer", "Participant"].map((type) => (
+          {(["Organizer", "Participant"] as SubmitterType[]).map((type) => (
             <FormControlLabel
               key={type}
               control={
@@ -250,31 +251,34 @@ export default function Reimbursements() {
           Category
         </Typography>
         <Stack sx={{ mb: 3 }}>
-          {Array.from(new Set(finances?.map((f) => f.category) || [])).map((category) => (
-            <FormControlLabel
-              key={category}
-              control={
-                <Checkbox
-                  checked={selectedCategories.includes(category)}
-                  onChange={() =>
-                    setSelectedCategories((prev) =>
-                      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
-                    )
-                  }
-                  sx={{ color: "white" }}
-                />
-              }
-              label={category}
-              sx={{ color: "white"}}
-            />
-          ))}
+          {[...new Set(finances?.map((f) => f.category) || [])].map((category) => {
+            const cat = category as Category;
+            return (
+              <FormControlLabel
+                key={cat}
+                control={
+                  <Checkbox
+                    checked={selectedCategories.includes(cat)}
+                    onChange={() =>
+                      setSelectedCategories((prev) =>
+                        prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+                      )
+                    }
+                    sx={{ color: "white" }}
+                  />
+                }
+                label={cat}
+                sx={{ color: "white"}}
+              />
+            );
+          })}
         </Stack>
 
         <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
           Status
         </Typography>
         <Stack sx={{ mb: 3 }}>
-          {["PENDING", "APPROVED", "REJECTED"].map((status) => (
+          {(["PENDING", "APPROVED", "REJECTED"] as Status[]).map((status) => (
             <FormControlLabel
               key={status}
               control={
