@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import ButtonAppBar from "../Menu/Menu";
-import Sidebar from "@/components/Sidebar/Sidebar"
+import TemporaryDrawer from "../Sidebar/Sidebar";
 
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
@@ -13,7 +13,7 @@ export default function DashboardLayout() {
   return (
     <>
       <ButtonAppBar toggleDrawer={toggleDrawer} />
-      <Sidebar open={open} onOpenChange={toggleDrawer} />
+      <TemporaryDrawer open={open} onOpenChange={toggleDrawer} />
     </>
   );
 }
