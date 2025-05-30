@@ -41,7 +41,7 @@ export const SpendingByCategory = ({ finances }: { finances: FinanceEntity[] }) 
   return (
     <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: 300 }}>
       <Typography variant="h6" color="primary" gutterBottom align="center">Spending by Category</Typography>
-      <ResponsiveContainer width="100%" height={280}> {/* Adjusted height */}
+      <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie
             data={chartData}
