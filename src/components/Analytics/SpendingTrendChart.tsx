@@ -39,7 +39,7 @@ export const SpendingTrendChart = ({
     if (!finances || finances.length === 0) return [];
 
     const start = parseISO(startDate);
-    const end = parseISO(endDate);
+    const end = endOfDay(parseISO(endDate));
 
     const dailySpending: Record<string, number> = {};
 
