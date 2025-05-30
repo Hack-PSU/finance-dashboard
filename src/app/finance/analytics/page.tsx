@@ -10,8 +10,6 @@ import {
 } from "@/components/Analytics/FinanceAnalyticsWidgets";
 import { SpendingTrendChart } from "@/components/Analytics/SpendingTrendChart";
 import { AverageSpendingPerSubmission } from "@/components/Analytics/AverageSpendingPerSubmission";
-import { MostFrequentCategories } from "@/components/Analytics/MostFrequentCategories"; // New import
-
 export default function FinanceAnalyticsPage(): React.JSX.Element {
   const { data: finances, isLoading, error } = useAllFinances();
 
