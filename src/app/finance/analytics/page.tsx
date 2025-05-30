@@ -5,6 +5,7 @@ import { useAllFinances } from "@/common/api/finance";
 import { Typography, Grid, CircularProgress, Alert } from "@mui/material";
 // Paper component is no longer directly used here, Status is used in the widgets
 import { TotalSpending, SpendingByCategory, SubmissionStatusCounts } from "@/components/Analytics/FinanceAnalyticsWidgets";
+import { SpendingTrendChart } from '@/components/Analytics/SpendingTrendChart'; // New import
 
 
 export default function FinanceAnalyticsPage(): React.JSX.Element {
@@ -40,6 +41,9 @@ export default function FinanceAnalyticsPage(): React.JSX.Element {
         </Grid>
         <Grid item xs={12} md={4}>
           <SubmissionStatusCounts finances={finances} />
+        </Grid>
+        <Grid item xs={12}> {/* Full width for the trend chart */}
+          <SpendingTrendChart finances={finances} />
         </Grid>
         {/* More analytics components can be added here */}
       </Grid>

@@ -26,11 +26,10 @@ describe('FinanceAnalyticsWidgets', () => {
   });
 
   describe('SpendingByCategory', () => {
-    it('renders spending by category correctly', () => {
+    it('renders the chart title when data is present', () => {
       render(<SpendingByCategory finances={mockFinances} />);
-      expect(screen.getByText('TRAVEL: $300.00')).toBeInTheDocument();
-      expect(screen.getByText('FOOD: $50.00')).toBeInTheDocument();
-      expect(screen.getByText('OTHER: $75.00')).toBeInTheDocument();
+      expect(screen.getByText('Spending by Category')).toBeInTheDocument();
+      // More specific chart element checks can be added if feasible and not too brittle
     });
 
     it('renders message for no data', () => {
@@ -40,11 +39,11 @@ describe('FinanceAnalyticsWidgets', () => {
   });
 
   describe('SubmissionStatusCounts', () => {
-    it('renders submission status counts correctly', () => {
+    it('renders submission status counts with new UI', () => {
       render(<SubmissionStatusCounts finances={mockFinances} />);
-      expect(screen.getByText('APPROVED: 2')).toBeInTheDocument();
-      expect(screen.getByText('PENDING: 1')).toBeInTheDocument();
-      expect(screen.getByText('REJECTED: 1')).toBeInTheDocument();
+      expect(screen.getByText((content, element) => content.startsWith('Approved:') && content.includes('2'))).toBeInTheDocument();
+      expect(screen.getByText((content, element) => content.startsWith('Pending:') && content.includes('1'))).toBeInTheDocument();
+      expect(screen.getByText((content, element) => content.startsWith('Rejected:') && content.includes('1'))).toBeInTheDocument();
     });
 
     it('renders message for no data', () => {

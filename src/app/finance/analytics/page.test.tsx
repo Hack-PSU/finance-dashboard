@@ -41,12 +41,13 @@ describe('FinanceAnalyticsPage', () => {
     render(<FinanceAnalyticsPage />);
     // Check for titles of the widgets
     expect(screen.getByText('Total Spending')).toBeInTheDocument();
-    expect(screen.getByText('Spending by Category')).toBeInTheDocument();
+    expect(screen.getByText('Spending by Category')).toBeInTheDocument(); // Title check is fine
     expect(screen.getByText('Submission Statuses')).toBeInTheDocument();
+    expect(screen.getByText('Spending Trends')).toBeInTheDocument(); // New check for SpendingTrendChart title
     // Check for some data points
     expect(screen.getByText('$150.00')).toBeInTheDocument(); // Total Spending
-    expect(screen.getByText('TRAVEL: $100.00')).toBeInTheDocument(); // Spending by Category
-    expect(screen.getByText('APPROVED: 1')).toBeInTheDocument(); // Submission Status
+    // Data point check for SpendingByCategory is removed as it's a chart now
+    expect(screen.getByText((content, element) => content.startsWith('Approved:') && content.includes('1'))).toBeInTheDocument(); // Updated Submission Status check
   });
 
   it('renders correctly when no finances data is available', () => {
@@ -56,5 +57,7 @@ describe('FinanceAnalyticsPage', () => {
     expect(screen.getByText('$0.00')).toBeInTheDocument();
     expect(screen.getByText('No spending data by category.')).toBeInTheDocument();
     expect(screen.getByText('No submissions found.')).toBeInTheDocument();
+    expect(screen.getByText('Spending Trends')).toBeInTheDocument(); // SpendingTrendChart should still render its title and date pickers
+    expect(screen.getByText('No spending data for the selected period.')).toBeInTheDocument(); // And show no data in trend chart
   });
 });
