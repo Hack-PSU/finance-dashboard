@@ -76,7 +76,6 @@ export const MostFrequentCategories = ({
     <Paper
       sx={{ p: 2, display: "flex", flexDirection: "column", minHeight: 180 }}
     >
-      {" "}
       {/* Adjusted minHeight if necessary based on content */}
       <Typography variant="h6" color="primary" gutterBottom align="center">
         Most Frequent Categories
