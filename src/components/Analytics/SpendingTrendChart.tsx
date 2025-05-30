@@ -22,7 +22,7 @@ export const SpendingTrendChart = ({ finances }: { finances: FinanceEntity[] }) 
 
     finances.forEach(item => {
       // Ensure item.createdAt is treated as a Date object
-      const itemDate = typeof item.createdAt === 'string' ? parseISO(item.createdAt) : item.createdAt;
+      const itemDate = item.createdAt instanceof Date ? item.createdAt : parseISO(item.createdAt as unknown as string);
       if (isWithinInterval(itemDate, { start, end })) {
         const day = format(itemDate, 'yyyy-MM-dd');
         dailySpending[day] = (dailySpending[day] || 0) + item.amount;

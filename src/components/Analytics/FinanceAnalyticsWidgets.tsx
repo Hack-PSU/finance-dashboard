@@ -41,25 +41,26 @@ export const SpendingByCategory = ({ finances }: { finances: FinanceEntity[] }) 
   return (
     <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', minHeight: 300 }}>
       <Typography variant="h6" color="primary" gutterBottom align="center">Spending by Category</Typography>
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={280}> {/* Adjusted height */}
         <PieChart>
           <Pie
             data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
-            // label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`} // Example label
-            outerRadius={80}
+            // label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`} // Keep label commented out or remove
+            outerRadius={110} // Increased outerRadius
             fill="#8884d8"
             dataKey="value"
-            nameKey="name"
+            nameKey="name" // Ensure nameKey is set for Tooltip
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
-          <Legend />
+          {/* Updated Tooltip to show name and formatted value */}
+          <Tooltip formatter={(value: number, name: string) => [`$${value.toFixed(2)}`, name]} />
+          {/* <Legend /> component removed */}
         </PieChart>
       </ResponsiveContainer>
     </Paper>

@@ -5,7 +5,9 @@ import { useAllFinances } from "@/common/api/finance";
 import { Typography, Grid, CircularProgress, Alert } from "@mui/material";
 // Paper component is no longer directly used here, Status is used in the widgets
 import { TotalSpending, SpendingByCategory, SubmissionStatusCounts } from "@/components/Analytics/FinanceAnalyticsWidgets";
-import { SpendingTrendChart } from '@/components/Analytics/SpendingTrendChart'; // New import
+import { SpendingTrendChart } from '@/components/Analytics/SpendingTrendChart';
+import { AverageSpendingPerSubmission } from '@/components/Analytics/AverageSpendingPerSubmission';
+import { MostFrequentCategories } from '@/components/Analytics/MostFrequentCategories'; // New import
 
 
 export default function FinanceAnalyticsPage(): React.JSX.Element {
@@ -33,16 +35,26 @@ export default function FinanceAnalyticsPage(): React.JSX.Element {
         Finance Analytics
       </Typography>
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}> {/* Adjusted md for 4 items in a row */}
           <TotalSpending finances={finances} />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}> {/* New item */}
+          <AverageSpendingPerSubmission finances={finances} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}> {/* Adjusted md */}
           <SpendingByCategory finances={finances} />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}> {/* Adjusted md */}
           <SubmissionStatusCounts finances={finances} />
         </Grid>
-        <Grid item xs={12}> {/* Full width for the trend chart */}
+
+        {/* Second row for Most Frequent Categories */}
+        <Grid item xs={12}>
+          <MostFrequentCategories finances={finances} />
+        </Grid>
+
+        {/* Third row for Trend Chart */}
+        <Grid item xs={12}>
           <SpendingTrendChart finances={finances} />
         </Grid>
         {/* More analytics components can be added here */}
