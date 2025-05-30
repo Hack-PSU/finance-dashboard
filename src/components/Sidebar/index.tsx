@@ -29,7 +29,11 @@ export default function TemporaryDrawer({
   const menuItems = [
     { text: "Finance", path: "/finance", icon: <MoneyIcon /> },
     { text: "Reimbursement", path: "/reimbursement", icon: <MoneyIcon /> },
-    { text: "Finance Analytics", path: "/finance/analytics", icon: <BarChartIcon /> }, // Added Finance Analytics
+    {
+      text: "Finance Analytics",
+      path: "/finance/analytics",
+      icon: <BarChartIcon />,
+    }, // Added Finance Analytics
     { text: "Login", path: "/login", icon: <LoginIcon /> },
   ];
 
