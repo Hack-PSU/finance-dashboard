@@ -10,6 +10,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import MoneyIcon from "@mui/icons-material/AttachMoney";
+import BarChartIcon from "@mui/icons-material/BarChart"; // Added BarChartIcon
 import LoginIcon from "@mui/icons-material/Login";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,6 +29,11 @@ export default function TemporaryDrawer({
   const menuItems = [
     { text: "Finance", path: "/finance", icon: <MoneyIcon /> },
     { text: "Reimbursement", path: "/reimbursement", icon: <MoneyIcon /> },
+    {
+      text: "Finance Analytics",
+      path: "/finance/analytics",
+      icon: <BarChartIcon />,
+    }, // Added Finance Analytics
     { text: "Login", path: "/login", icon: <LoginIcon /> },
   ];
 
