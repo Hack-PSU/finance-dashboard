@@ -99,7 +99,6 @@ export const SpendingByCategory = ({
             cx="50%"
             cy="50%"
             labelLine={false}
-            
             outerRadius={110} // Increased outerRadius
             fill="#8884d8"
             dataKey="value"

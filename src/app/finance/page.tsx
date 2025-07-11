@@ -1,76 +1,175 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Status, Category, SubmitterType } from "@/common/api/finance/entity";
 import {
-  FinanceEntity,
   useAllFinances,
   useUpdateFinanceStatus,
-} from "@/common/api/finance";
+} from "@/common/api/finance/hook";
+import { FinanceEntity } from "@/common/api/finance/entity";
+import { useAllUsers } from "@/common/api/user/hook";
+import { useAllOrganizers } from "@/common/api/organizer/hook";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
-  DataTable,
-  TableColumn,
-} from "@/components/DataTable/ReimbursementTable";
-import { StatusCell } from "@/components/DataTable/StatusCell";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
-  FilterList as FilterListIcon,
-  Edit as EditIcon,
-} from "@mui/icons-material";
-import { IconButton, Snackbar, Alert } from "@mui/material";
-import { FilterDrawer } from "@/components/FilterDrawer/FilterDrawer";
-import { useUser } from "@/common/api/user";
-import { useOrganizer } from "@/common/api/organizer";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import {
+  Filter,
+  Search,
+  Edit,
+  ExternalLink,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 
-// Cell component to display submitter's name based on their type
-function SubmitterCell({ id, type }: { id: string; type: SubmitterType }) {
-  const { data: user, isLoading: userLoading, error: userError } = useUser(id);
-  const {
-    data: organizer,
-    isLoading: orgLoading,
-    error: orgError,
-  } = useOrganizer(id);
+type SortOrder = "asc" | "desc";
 
-  if (orgLoading || userLoading) return <span>Loading...</span>;
-  if (orgError && userError) return <span>{id}</span>;
-
-  if (type === SubmitterType.USER) {
-    if (!user) return <span>{id}</span>;
-    return <>{`${user.firstName} ${user.lastName}`}</>;
-  }
-  if (type === SubmitterType.ORGANIZER) {
-    if (!organizer) return <span>{id}</span>;
-    return <>{`${organizer.firstName} ${organizer.lastName}`}</>;
-  }
+interface SubmitterCellProps {
+  id: string;
+  type: SubmitterType;
 }
 
-export default function Reimbursements(): React.JSX.Element {
-  const router = useRouter();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  } | null>(null);
+function SubmitterCell({ id, type }: SubmitterCellProps) {
+  const { data: allUsers = [] } = useAllUsers();
+  const { data: allOrganizers = [] } = useAllOrganizers();
 
+  const getName = () => {
+    if (type === SubmitterType.USER) {
+      const user = allUsers.find((u) => u.id === id);
+      return user
+        ? `${user.firstName} ${user.lastName}`
+        : `User ${id.slice(-8)}`;
+    } else {
+      const organizer = allOrganizers.find((o) => o.id === id);
+      return organizer
+        ? `${organizer.firstName} ${organizer.lastName}`
+        : `Organizer ${id.slice(-8)}`;
+    }
+  };
+
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium">{getName()}</span>
+      <span className="text-xs text-muted-foreground">
+        {type === SubmitterType.USER ? "User" : "Organizer"}
+      </span>
+    </div>
+  );
+}
+
+interface StatusCellProps {
+  status: Status;
+  onChange?: (newStatus: Status) => void;
+}
+
+function StatusCell({ status, onChange }: StatusCellProps) {
+  const getStatusColor = (status: Status) => {
+    switch (status) {
+      case Status.APPROVED:
+        return "bg-green-100 text-green-800 border-green-200";
+      case Status.PENDING:
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case Status.REJECTED:
+        return "bg-red-100 text-red-800 border-red-200";
+      case Status.DEPOSIT:
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  return (
+    <Select
+      value={status}
+      onValueChange={(value) => onChange?.(value as Status)}
+    >
+      <SelectTrigger className="w-32">
+        <SelectValue>
+          <Badge variant="outline" className={getStatusColor(status)}>
+            {status}
+          </Badge>
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={Status.APPROVED}>
+          <Badge variant="outline" className={getStatusColor(Status.APPROVED)}>
+            Approved
+          </Badge>
+        </SelectItem>
+        <SelectItem value={Status.PENDING}>
+          <Badge variant="outline" className={getStatusColor(Status.PENDING)}>
+            Pending
+          </Badge>
+        </SelectItem>
+        <SelectItem value={Status.REJECTED}>
+          <Badge variant="outline" className={getStatusColor(Status.REJECTED)}>
+            Rejected
+          </Badge>
+        </SelectItem>
+        <SelectItem value={Status.DEPOSIT}>
+          <Badge variant="outline" className={getStatusColor(Status.DEPOSIT)}>
+            Deposit
+          </Badge>
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
+export default function ReimbursementsPage() {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortColumn, setSortColumn] = useState<keyof FinanceEntity | null>(
+    null,
+  );
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Filter states
   const [selectedSubmitterTypes, setSelectedSubmitterTypes] = useState<
     SubmitterType[]
   >([]);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
-  const [minAmount, setMinAmount] = useState<string>("");
-  const [maxAmount, setMaxAmount] = useState<string>("");
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
 
-  const { data: finances, error } = useAllFinances();
+  const { data: finances = [], error } = useAllFinances();
   const updateMutation = useUpdateFinanceStatus();
 
   useEffect(() => {
     if (error) {
-      setSnackbar({
-        open: true,
-        message: "Error fetching finances",
-        severity: "error",
-      });
+      toast.error("Failed to fetch reimbursements");
     }
   }, [error]);
 
@@ -78,173 +177,464 @@ export default function Reimbursements(): React.JSX.Element {
     updateMutation.mutate(
       { id, data: { status: newStatus } },
       {
-        onSuccess: () =>
-          setSnackbar({
-            open: true,
-            message: `Status updated to ${newStatus}`,
-            severity: "success",
-          }),
-        onError: (e: Error) =>
-          setSnackbar({ open: true, message: e.message, severity: "error" }),
+        onSuccess: () => {
+          toast.success(`Status updated to ${newStatus}`);
+        },
+        onError: (error: Error) => {
+          toast.error(error.message);
+        },
       },
     );
   };
 
-  // Define columns, now using SubmitterCell for the Submitter column
-  const columns: TableColumn<FinanceEntity>[] = [
-    {
-      id: "submitterId",
-      label: "Submitter",
-      sortable: true,
-      render: (r) => (
-        <SubmitterCell id={r.submitterId} type={r.submitterType} />
-      ),
-    },
-    {
-      id: "amount",
-      label: "Amount",
-      sortable: true,
-      render: (r) => `$${r.amount.toFixed(2)}`,
-    },
-    { id: "description", label: "Description", sortable: true },
-    { id: "category", label: "Category", sortable: true },
-    {
-      id: "status",
-      label: "Status",
-      sortable: true,
-      render: (r) => (
-        <StatusCell
-          status={r.status}
-          onChange={(s) => handleStatusUpdate(r.id, s)}
-        />
-      ),
-    },
-    {
-      id: "receiptUrl",
-      label: "Receipt",
-      render: (r) =>
-        r.receiptUrl ? (
-          <a
-            href={r.receiptUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#F25C54] hover:underline"
-          >
-            View Receipt
-          </a>
-        ) : (
-          "—"
-        ),
-    },
-    {
-      id: "id",
-      label: "Actions",
-      render: (r) => (
-        <IconButton
-          size="small"
-          aria-label="Edit reimbursement"
-          className="text-[#F25C54]"
-          onClick={() => router.push(`/finance/${r.id}`)}
-        >
-          <EditIcon fontSize="small" />
-        </IconButton>
-      ),
-    },
-  ];
+  const handleSort = (column: keyof FinanceEntity) => {
+    if (sortColumn === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortOrder("asc");
+    }
+  };
 
-  // Apply filtering
-  const filtered = useMemo(() => {
-    return (finances || []).filter((f) => {
-      const byType =
-        !selectedSubmitterTypes.length ||
-        selectedSubmitterTypes.includes(f.submitterType);
-      const byCat =
-        !selectedCategories.length || selectedCategories.includes(f.category);
-      const byStatus =
-        !selectedStatuses.length || selectedStatuses.includes(f.status);
-      const byMin = !minAmount || f.amount >= parseFloat(minAmount);
-      const byMax = !maxAmount || f.amount <= parseFloat(maxAmount);
-      return byType && byCat && byStatus && byMin && byMax;
+  const filteredAndSortedData = useMemo(() => {
+    const filtered = finances.filter((finance) => {
+      // Search filter
+      const searchMatch = searchTerm
+        ? JSON.stringify(finance)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        : true;
+
+      // Type filter
+      const typeMatch =
+        selectedSubmitterTypes.length === 0 ||
+        selectedSubmitterTypes.includes(finance.submitterType);
+
+      // Category filter
+      const categoryMatch =
+        selectedCategories.length === 0 ||
+        selectedCategories.includes(finance.category);
+
+      // Status filter
+      const statusMatch =
+        selectedStatuses.length === 0 ||
+        selectedStatuses.includes(finance.status);
+
+      // Amount filters
+      const minMatch =
+        !minAmount || finance.amount >= Number.parseFloat(minAmount);
+      const maxMatch =
+        !maxAmount || finance.amount <= Number.parseFloat(maxAmount);
+
+      return (
+        searchMatch &&
+        typeMatch &&
+        categoryMatch &&
+        statusMatch &&
+        minMatch &&
+        maxMatch
+      );
     });
+
+    // Sort
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        const aVal = a[sortColumn];
+        const bVal = b[sortColumn];
+
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+        }
+
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
+        if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
   }, [
     finances,
+    searchTerm,
     selectedSubmitterTypes,
     selectedCategories,
     selectedStatuses,
     minAmount,
     maxAmount,
+    sortColumn,
+    sortOrder,
   ]);
 
-  const toggleType = (t: SubmitterType) =>
+  const paginatedData = useMemo(() => {
+    const start = page * rowsPerPage;
+    return filteredAndSortedData.slice(start, start + rowsPerPage);
+  }, [filteredAndSortedData, page, rowsPerPage]);
+
+  const toggleSubmitterType = (type: SubmitterType) => {
     setSelectedSubmitterTypes((prev) =>
-      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t],
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
     );
-  const toggleCat = (c: Category) =>
+  };
+
+  const toggleCategory = (category: Category) => {
     setSelectedCategories((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
-  const toggleStatus = (s: Status) =>
+  };
+
+  const toggleStatus = (status: Status) => {
     setSelectedStatuses((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status],
     );
+  };
+
   const resetFilters = () => {
     setSelectedSubmitterTypes([]);
     setSelectedCategories([]);
     setSelectedStatuses([]);
     setMinAmount("");
     setMaxAmount("");
+    setSearchTerm("");
   };
 
+  const SortableHeader = ({
+    column,
+    children,
+  }: {
+    column: keyof FinanceEntity;
+    children: React.ReactNode;
+  }) => (
+    <Button
+      variant="ghost"
+      className="h-auto p-0 font-semibold text-left justify-start"
+      onClick={() => handleSort(column)}
+    >
+      {children}
+      {sortColumn === column &&
+        (sortOrder === "asc" ? (
+          <ChevronUp className="ml-1 h-4 w-4" />
+        ) : (
+          <ChevronDown className="ml-1 h-4 w-4" />
+        ))}
+    </Button>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <h2 className="text-3xl font-bold text-[#F25C54] text-center mb-8">
-        Reimbursements
-      </h2>
+    <div className="container mx-auto p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+            <div className="flex items-center space-x-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search reimbursements..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full md:w-80"
+              />
+            </div>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                  {(selectedSubmitterTypes.length +
+                    selectedCategories.length +
+                    selectedStatuses.length >
+                    0 ||
+                    minAmount ||
+                    maxAmount) && (
+                    <Badge variant="secondary" className="ml-2">
+                      {selectedSubmitterTypes.length +
+                        selectedCategories.length +
+                        selectedStatuses.length +
+                        (minAmount ? 1 : 0) +
+                        (maxAmount ? 1 : 0)}
+                    </Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Filter Reimbursements</SheetTitle>
+                  <SheetDescription>
+                    Apply filters to narrow down the results
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="space-y-6 mt-6">
+                  {/* Submitter Type Filter */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">
+                      Submitter Type
+                    </Label>
+                    <div className="space-y-2">
+                      {Object.values(SubmitterType).map((type) => (
+                        <div key={type} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`type-${type}`}
+                            checked={selectedSubmitterTypes.includes(type)}
+                            onCheckedChange={() => toggleSubmitterType(type)}
+                          />
+                          <Label htmlFor={`type-${type}`} className="text-sm">
+                            {type}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-      <FilterDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        selectedSubmitterTypes={selectedSubmitterTypes}
-        selectedCategories={selectedCategories}
-        selectedStatuses={selectedStatuses}
-        minAmount={minAmount}
-        maxAmount={maxAmount}
-        onToggleSubmitterType={toggleType}
-        onToggleCategory={toggleCat}
-        onToggleStatus={toggleStatus}
-        onMinAmountChange={setMinAmount}
-        onMaxAmountChange={setMaxAmount}
-        onReset={resetFilters}
-      />
+                  <Separator />
 
-      <DataTable
-        columns={columns}
-        data={filtered}
-        getRowId={(r) => r.id}
-        searchPlaceholder="Search finance items by description, amount, type or status"
-        maxHeight={600}
-        startAdornment={
-          <IconButton
-            onClick={() => setDrawerOpen(true)}
-            className="text-gray-700 hover:text-[#F25C54] hover:bg-[#F25C54] hover:bg-opacity-10 rounded"
-          >
-            <FilterListIcon />
-          </IconButton>
-        }
-      />
+                  {/* Status Filter */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Status</Label>
+                    <div className="space-y-2">
+                      {Object.values(Status).map((status) => (
+                        <div
+                          key={status}
+                          className="flex items-center space-x-2"
+                        >
+                          <Checkbox
+                            id={`status-${status}`}
+                            checked={selectedStatuses.includes(status)}
+                            onCheckedChange={() => toggleStatus(status)}
+                          />
+                          <Label
+                            htmlFor={`status-${status}`}
+                            className="text-sm"
+                          >
+                            {status}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-      {snackbar && (
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={3000}
-          onClose={() => setSnackbar(null)}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        >
-          <Alert onClose={() => setSnackbar(null)} severity={snackbar.severity}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      )}
+                  <Separator />
+
+                  {/* Category Filter */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Categories</Label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {Object.values(Category).map((category) => (
+                        <div
+                          key={category}
+                          className="flex items-center space-x-2"
+                        >
+                          <Checkbox
+                            id={`category-${category}`}
+                            checked={selectedCategories.includes(category)}
+                            onCheckedChange={() => toggleCategory(category)}
+                          />
+                          <Label
+                            htmlFor={`category-${category}`}
+                            className="text-sm"
+                          >
+                            {category}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Amount Range Filter */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Amount Range</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label
+                          htmlFor="min-amount"
+                          className="text-xs text-muted-foreground"
+                        >
+                          Min Amount
+                        </Label>
+                        <Input
+                          id="min-amount"
+                          type="number"
+                          placeholder="0"
+                          value={minAmount}
+                          onChange={(e) => setMinAmount(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label
+                          htmlFor="max-amount"
+                          className="text-xs text-muted-foreground"
+                        >
+                          Max Amount
+                        </Label>
+                        <Input
+                          id="max-amount"
+                          type="number"
+                          placeholder="1000"
+                          value={maxAmount}
+                          onChange={(e) => setMaxAmount(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <Button
+                    variant="outline"
+                    onClick={resetFilters}
+                    className="w-full bg-transparent"
+                  >
+                    Reset Filters
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    <SortableHeader column="submitterId">
+                      Submitter
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader column="amount">Amount</SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader column="description">
+                      Description
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader column="category">Category</SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader column="status">Status</SortableHeader>
+                  </TableHead>
+                  <TableHead>Receipt</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((finance) => (
+                    <TableRow key={finance.id}>
+                      <TableCell>
+                        <SubmitterCell
+                          id={finance.submitterId}
+                          type={finance.submitterType}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        ${finance.amount.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {finance.description}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{finance.category}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <StatusCell
+                          status={finance.status}
+                          onChange={(status) =>
+                            handleStatusUpdate(finance.id, status)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {finance.receiptUrl ? (
+                          <Button variant="ghost" size="sm" asChild>
+                            <a
+                              href={finance.receiptUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/finance/${finance.id}`)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      No reimbursements found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between space-x-2 py-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {page * rowsPerPage + 1} to{" "}
+              {Math.min((page + 1) * rowsPerPage, filteredAndSortedData.length)}{" "}
+              of {filteredAndSortedData.length} results
+            </div>
+            <div className="flex items-center space-x-2">
+              <Select
+                value={rowsPerPage.toString()}
+                onValueChange={(value) => setRowsPerPage(Number(value))}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(Math.max(0, page - 1))}
+                disabled={page === 0}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={
+                  (page + 1) * rowsPerPage >= filteredAndSortedData.length
+                }
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
