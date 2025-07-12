@@ -7,6 +7,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { ThemeProvider } from "@mui/material";
 import theme from "@/theme";
 import DashboardLayout from "@/components/DashboardLayout/DashboardLayout";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,7 +30,10 @@ export default function RootLayout({
         <LayoutProvider>
           <AppRouterCacheProvider>
             <ThemeProvider theme={theme}>
-              <DashboardLayout>{children}</DashboardLayout>
+              <DashboardLayout>
+                <Toaster richColors />
+                {children}
+              </DashboardLayout>
             </ThemeProvider>
           </AppRouterCacheProvider>
         </LayoutProvider>

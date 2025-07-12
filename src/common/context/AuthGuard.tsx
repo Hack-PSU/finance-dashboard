@@ -14,6 +14,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const { isLoading, isAuthenticated } = useFirebase();
 
   useEffect(() => {
+    console.log(isLoading, isAuthenticated, pathname);
     if (pathname !== "/login" && !isLoading && !isAuthenticated) {
       router.replace("/login");
     }

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   Auth,
   AuthError,
@@ -8,6 +14,7 @@ import {
   signOut,
   User,
   onIdTokenChanged,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
@@ -51,6 +58,7 @@ type FirebaseProviderHooks = {
   token: string;
   error: string;
   loginWithEmailAndPassword(email: string, password: string): Promise<void>;
+  resetPassword(email: string): Promise<void>;
   logout(): Promise<void>;
 };
 
@@ -125,6 +133,24 @@ const FirebaseProvider: React.FC<Props> = ({ children, auth }) => {
     }
   };
 
+  const actionCodeSettings = {
+    url: "https://finance.hackpsu.org/login",
+    handleCodeInApp: true,
+  };
+  // Send a password reset email.
+  const resetPassword = useCallback(
+    async (email: string) => {
+      setError("");
+      try {
+        await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      } catch (err: any) {
+        setError(err.message || "Password reset failed");
+        throw err;
+      }
+    },
+    [auth],
+  );
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -141,6 +167,7 @@ const FirebaseProvider: React.FC<Props> = ({ children, auth }) => {
     token,
     error,
     loginWithEmailAndPassword,
+    resetPassword,
     logout,
   };
 
