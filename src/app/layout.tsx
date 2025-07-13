@@ -8,6 +8,7 @@ import { ThemeProvider } from "@mui/material";
 import theme from "@/theme";
 import DashboardLayout from "@/components/DashboardLayout/DashboardLayout";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({
             </ThemeProvider>
           </AppRouterCacheProvider>
         </LayoutProvider>
+        <Analytics />
       </body>
     </html>
   );
