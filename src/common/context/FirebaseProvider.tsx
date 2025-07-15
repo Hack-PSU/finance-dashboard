@@ -1,175 +1,168 @@
-import React, {
+"use client";
+
+import type React from "react";
+import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useState,
+  useCallback,
+  useMemo,
+  type FC,
 } from "react";
-import {
-  Auth,
-  AuthError,
-  getIdToken,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  User,
-  onIdTokenChanged,
-  sendPasswordResetEmail,
-} from "firebase/auth";
-import { jwtDecode, JwtPayload } from "jwt-decode";
+import { type Auth, type User, signOut } from "firebase/auth";
+import { auth } from "@/common/config/firebase";
 
-type FirebaseJwtPayload = JwtPayload & {
-  production?: number;
-  staging?: number;
-};
-
-enum Role {
-  NONE = 0,
-  VOLUNTEER,
-  TEAM,
-  EXEC,
-  TECH,
-  FINANCE,
-}
-
-function extractAuthToken(token: string): string {
-  return token.startsWith("Bearer ") ? token.slice(7) : token;
-}
-
-function decodeToken(token: string): FirebaseJwtPayload {
-  return jwtDecode(token);
-}
-
-function getRole(token: string): Role {
-  try {
-    const extractedToken = extractAuthToken(token);
-    const decodedToken = decodeToken(extractedToken);
-    const role = decodedToken.production ?? decodedToken.staging;
-    return role !== undefined ? (role as Role) : Role.NONE;
-  } catch {
-    return Role.NONE;
-  }
-}
-
-type FirebaseProviderHooks = {
+type FirebaseContextType = {
+  auth: Auth;
   isLoading: boolean;
   isAuthenticated: boolean;
   user?: User;
-  token: string;
-  error: string;
-  loginWithEmailAndPassword(email: string, password: string): Promise<void>;
-  resetPassword(email: string): Promise<void>;
+  token?: string;
+  error?: string;
+  verifySession(): Promise<void>;
   logout(): Promise<void>;
 };
 
-type Props = {
-  children: React.ReactNode;
-  auth: Auth;
-};
+const FirebaseContext = createContext<FirebaseContextType | null>(null);
 
-const FirebaseContext = createContext<FirebaseProviderHooks | null>(null);
+type Props = { children: React.ReactNode };
 
-const FirebaseProvider: React.FC<Props> = ({ children, auth }) => {
-  const [isLoading, setIsLoading] = useState(true);
+export const FirebaseProvider: FC<Props> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState("");
-  const [error, setError] = useState("");
+  const [token, setToken] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  useEffect(() => {
-    const handleAuthStateChange = async (currentUser: User | null) => {
-      setIsLoading(true);
-      if (currentUser) {
-        try {
-          const currentToken = await getIdToken(currentUser, true);
-          setToken(currentToken);
-          setUser(currentUser);
-        } catch (err) {
-          console.error("Failed to get ID token:", err);
-          setError("Failed to retrieve authentication token.");
-          setToken("");
-          setUser(null);
-        }
-      } else {
-        setToken("");
-        setUser(null);
-      }
-      setIsLoading(false);
-    };
+  // Verify session with the auth server
+  const verifySession = useCallback(async () => {
+    // Don't verify session if we're in the middle of logging out
+    if (isLoggingOut) {
+      console.log("Skipping session verification - logout in progress");
+      return;
+    }
 
-    const unsubscribeAuth = onAuthStateChanged(auth, handleAuthStateChange);
-    const unsubscribeToken = onIdTokenChanged(auth, handleAuthStateChange);
-
-    return () => {
-      unsubscribeAuth();
-      unsubscribeToken();
-    };
-  }, [auth]);
-
-  const loginWithEmailAndPassword = async (email: string, password: string) => {
-    setError("");
-    setIsLoading(true);
+    console.log("Verifying session...");
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-      const currentToken = await getIdToken(userCredential.user);
-      if (getRole(currentToken) < Role.TEAM) {
-        await signOut(auth);
-        setError(
-          "You do not have the required permissions to access this app.",
-        );
-        setToken("");
-        setUser(null);
-        return;
+      const response = await fetch("https://auth.hackpsu.org/api/sessionUser", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Session verification response:", response.status);
+
+      if (!response.ok) {
+        throw new Error(`Session verification failed: ${response.status}`);
       }
-      // The auth state listener will handle the rest
+
+      const data = await response.json();
+      console.log("Session data received:", !!data.customToken);
+
+      if (data.customToken) {
+        const { signInWithCustomToken } = await import("firebase/auth");
+        const userCredential = await signInWithCustomToken(
+          auth,
+          data.customToken,
+        );
+
+        console.log("Firebase sign-in successful:", userCredential.user.email);
+        setUser(userCredential.user);
+        setToken(data.customToken);
+        setError(undefined);
+      } else {
+        throw new Error("No custom token received");
+      }
     } catch (err) {
-      setError((err as AuthError).message || "Login failed");
+      console.error("Session verification failed:", err);
+      setUser(null);
+      setToken(undefined);
+      setError(
+        err instanceof Error ? err.message : "Session verification failed",
+      );
       throw err;
+    }
+  }, [isLoggingOut]);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    if (hasInitialized || isLoggingOut) return;
+
+    const checkSession = async () => {
+      console.log("Initial session check...");
+      setIsLoading(true);
+      try {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session check timeout")), 5000),
+        );
+
+        await Promise.race([verifySession(), timeoutPromise]);
+        console.log("Initial session check successful");
+      } catch (err) {
+        console.log("No valid session found or timeout occurred:", err);
+      } finally {
+        setIsLoading(false);
+        setHasInitialized(true);
+      }
+    };
+
+    checkSession();
+  }, [verifySession, hasInitialized, isLoggingOut]);
+
+  // Enhanced logout function
+  const logout = useCallback(async () => {
+    console.log("Starting logout process...");
+    setIsLoggingOut(true);
+    setError(undefined);
+    setIsLoading(true);
+
+    try {
+      // Clear the session on the auth server first
+      console.log("Clearing auth server session...");
+      await fetch("https://auth.hackpsu.org/api/sessionLogout", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Sign out from Firebase
+      console.log("Signing out from Firebase...");
+      await signOut(auth);
+
+      // Clear local state
+      setUser(null);
+      setToken(undefined);
+
+      console.log("Logout successful");
+    } catch (e: any) {
+      console.error("Logout failed:", e);
+      setError(e.message);
+      throw e;
     } finally {
       setIsLoading(false);
+      setIsLoggingOut(false);
     }
-  };
+  }, []);
 
-  const actionCodeSettings = {
-    url: "https://finance.hackpsu.org/login",
-    handleCodeInApp: true,
-  };
-  // Send a password reset email.
-  const resetPassword = useCallback(
-    async (email: string) => {
-      setError("");
-      try {
-        await sendPasswordResetEmail(auth, email, actionCodeSettings);
-      } catch (err: any) {
-        setError(err.message || "Password reset failed");
-        throw err;
-      }
-    },
-    [auth],
+  const value = useMemo(
+    () => ({
+      auth,
+      isLoading,
+      isAuthenticated: !!user && !isLoggingOut,
+      user: user || undefined,
+      token,
+      error,
+      verifySession,
+      logout,
+    }),
+    [isLoading, user, token, error, verifySession, logout, isLoggingOut],
   );
-
-  const logout = async () => {
-    try {
-      await signOut(auth);
-      // The auth state listener will handle the rest
-    } catch (err) {
-      setError((err as AuthError).message || "Logout failed");
-    }
-  };
-
-  const value: FirebaseProviderHooks = {
-    isLoading,
-    isAuthenticated: !!user && !error,
-    user: user || undefined,
-    token,
-    error,
-    loginWithEmailAndPassword,
-    resetPassword,
-    logout,
-  };
 
   return (
     <FirebaseContext.Provider value={value}>
@@ -179,11 +172,7 @@ const FirebaseProvider: React.FC<Props> = ({ children, auth }) => {
 };
 
 export const useFirebase = () => {
-  const context = useContext(FirebaseContext);
-  if (!context) {
-    throw new Error("useFirebase must be used within a FirebaseProvider");
-  }
-  return context;
+  const ctx = useContext(FirebaseContext);
+  if (!ctx) throw new Error("useFirebase must be used within FirebaseProvider");
+  return ctx;
 };
-
-export default FirebaseProvider;
