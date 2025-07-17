@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
+import { PostHogProvider } from "@/common/context/PostHogProvider";
 import SideNavbar from "../components/DashboardLayout/DashboardLayout";
 import { LayoutProvider } from "@/common/context";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
@@ -28,17 +29,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        <LayoutProvider>
-          <AppRouterCacheProvider>
-            <ThemeProvider theme={theme}>
-              <DashboardLayout>
-                <Toaster richColors />
-                {children}
-              </DashboardLayout>
-            </ThemeProvider>
-          </AppRouterCacheProvider>
-        </LayoutProvider>
-        <Analytics />
+        <PostHogProvider>
+          <LayoutProvider>
+            <AppRouterCacheProvider>
+              <ThemeProvider theme={theme}>
+                <DashboardLayout>
+                  <Toaster richColors />
+                  {children}
+                </DashboardLayout>
+              </ThemeProvider>
+            </AppRouterCacheProvider>
+          </LayoutProvider>
+          <Analytics />
+        </PostHogProvider>
       </body>
     </html>
   );
