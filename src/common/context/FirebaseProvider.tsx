@@ -12,6 +12,7 @@ import {
 } from "react";
 import { type Auth, type User, signOut } from "firebase/auth";
 import { auth } from "@/common/config/firebase";
+import posthog from "posthog-js";
 
 type FirebaseContextType = {
   auth: Auth;
@@ -67,13 +68,18 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
         const { signInWithCustomToken } = await import("firebase/auth");
         const userCredential = await signInWithCustomToken(
           auth,
-          data.customToken,
+          data.customToken
         );
 
         console.log("Firebase sign-in successful:", userCredential.user.email);
         setUser(userCredential.user);
         setToken(data.customToken);
         setError(undefined);
+
+        // Identify user in PostHog
+        posthog.identify(userCredential.user.uid, {
+          email: userCredential.user.email || undefined,
+        });
       } else {
         throw new Error("No custom token received");
       }
@@ -82,7 +88,7 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
       setUser(null);
       setToken(undefined);
       setError(
-        err instanceof Error ? err.message : "Session verification failed",
+        err instanceof Error ? err.message : "Session verification failed"
       );
       throw err;
     }
@@ -97,7 +103,7 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
       setIsLoading(true);
       try {
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Session check timeout")), 5000),
+          setTimeout(() => reject(new Error("Session check timeout")), 5000)
         );
 
         await Promise.race([verifySession(), timeoutPromise]);
@@ -121,6 +127,9 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
     setIsLoading(true);
 
     try {
+      // Clear PostHog identity
+      posthog.reset();
+
       // Clear the session on the auth server first
       console.log("Clearing auth server session...");
       await fetch("https://auth.hackpsu.org/api/sessionLogout", {
@@ -161,7 +170,7 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
       verifySession,
       logout,
     }),
-    [isLoading, user, token, error, verifySession, logout, isLoggingOut],
+    [isLoading, user, token, error, verifySession, logout, isLoggingOut]
   );
 
   return (
