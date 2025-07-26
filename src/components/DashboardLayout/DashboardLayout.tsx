@@ -28,10 +28,11 @@ import {
   Receipt,
   LogIn,
   Home,
+  ReceiptIcon,
   Settings,
   User,
 } from "lucide-react";
-import Logo from "../../../public/android-chrome-512x512.png";
+import Logo from "../../../public/logo.png";
 
 const menuItems = [
   {
@@ -53,6 +54,11 @@ const menuItems = [
     title: "Profile",
     path: "/analytics/self",
     icon: User,
+  },
+  {
+    title: "Invoice",
+    path: "/invoice",
+    icon: ReceiptIcon,
   },
   {
     title: "Settings",

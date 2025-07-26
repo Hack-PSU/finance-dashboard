@@ -5,7 +5,7 @@ import React from "react";
 import Link from "next/link";
 import MenuIcon from "@mui/icons-material/Menu";
 import Image from "next/image";
-import Logo from "../../../public/android-chrome-512x512.png";
+import Logo from "../../../public/logo.png";
 
 interface HeaderProps {
   toggleDrawer: (state: "open" | "close") => void;
