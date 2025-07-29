@@ -3930,10 +3930,10 @@ lru-cache@^10.2.0:
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.4.3.tgz#410fc8a17b70e598013df257c2446b7f3383f119"
   integrity sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==
 
-lucide-react@^0.526.0:
-  version "0.526.0"
-  resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.526.0.tgz#05aa6a13be05b0777f2e27c22b6dcfd123c41eed"
-  integrity sha512-uGWG/2RKuDLeQHCodn5cmJ9Zij80EstOdcBP+j//B2sr78w7woiEL4aMu6CRlRkyOyJ8sZry8QLhQTmZjynLdA==
+lucide-react@^0.533.0:
+  version "0.533.0"
+  resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.533.0.tgz#f0d716540a0ae2baf6d8b018df10978bb3bd5333"
+  integrity sha512-XwRo6CQowPRe1cfBJITmHytjR3XS4AZpV6rrBFEzoghARgyU2RK3yNRSnRkSFFSQJWFdQ8f4Wk1awgLLSy1NCQ==
 
 luxon@^3.5.0:
   version "3.7.1"
