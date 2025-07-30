@@ -23,6 +23,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Plus,
   Trash2,
   FileText,
@@ -32,6 +45,8 @@ import {
   DollarSign,
   Loader2,
   RefreshCw,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react";
 
 // Zod schema for invoice validation
@@ -72,6 +87,20 @@ const PAYMENT_TERMS_OPTIONS = [
   "Net 30",
   "Net 45",
   "Net 60",
+];
+
+const LINE_ITEM_PRESETS = [
+  { label: "Bronze Sponsorship Package", price: 1500 },
+  { label: "Silver Sponsorship Package", price: 3000 },
+  { label: "Gold Sponsorship Package", price: 5000 },
+  { label: "Platinum Sponsorship Package", price: 8000 },
+  { label: "Sponsored Dinner", price: 2500 },
+  { label: "Host a Challenge", price: 2000 },
+  { label: "Sponsored Lunch", price: 2000 },
+  { label: "Host a Workshop", price: 1750 },
+  { label: "Keynote Speaker", price: 1250 },
+  { label: "Ice-cream Social", price: 600 },
+  { label: "Sponsored Snack", price: 400 },
 ];
 
 export default function InvoiceGenerator() {
@@ -740,13 +769,71 @@ export default function InvoiceGenerator() {
                       <Controller
                         name={`lineItems.${index}.description`}
                         control={form.control}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            placeholder="Sponsorship Package Tier"
-                            className="h-8 text-sm"
-                          />
-                        )}
+                        render={({ field }) => {
+                          const [open, setOpen] = useState(false);
+
+                          return (
+                            <Popover open={open} onOpenChange={setOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={open}
+                                  className="h-8 justify-between text-sm font-normal"
+                                >
+                                  {field.value ||
+                                    "Select or type description..."}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0">
+                                <Command>
+                                  <CommandInput
+                                    placeholder="Search or type custom description..."
+                                    value={field.value}
+                                    onValueChange={(value) => {
+                                      field.onChange(value);
+                                    }}
+                                  />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      Type to create custom description
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {LINE_ITEM_PRESETS.map((preset) => (
+                                        <CommandItem
+                                          key={preset.label}
+                                          onSelect={() => {
+                                            field.onChange(preset.label);
+                                            form.setValue(
+                                              `lineItems.${index}.unitPrice`,
+                                              preset.price,
+                                            );
+                                            setOpen(false);
+                                          }}
+                                        >
+                                          <Check
+                                            className={`mr-2 h-4 w-4 ${
+                                              field.value === preset.label
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            }`}
+                                          />
+                                          <div className="flex flex-col">
+                                            <span>{preset.label}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                              ${preset.price.toLocaleString()}
+                                            </span>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          );
+                        }}
                       />
                     </div>
                     <div className="space-y-1">
