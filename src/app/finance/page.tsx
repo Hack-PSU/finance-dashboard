@@ -421,7 +421,7 @@ export default function ReimbursementsPage() {
                   {/* Category Filter */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Categories</Label>
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
                       {Object.values(Category).map((category) => (
                         <div
                           key={category}
