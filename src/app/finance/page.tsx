@@ -360,14 +360,14 @@ export default function ReimbursementsPage() {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
+              <SheetContent className="overflow-y-auto">
+                <SheetHeader className="flex-shrink-0">
                   <SheetTitle>Filter Reimbursements</SheetTitle>
                   <SheetDescription>
                     Apply filters to narrow down the results
                   </SheetDescription>
                 </SheetHeader>
-                <div className="space-y-6 mt-6">
+                <div className="space-y-6 mt-6 pb-6">
                   {/* Submitter Type Filter */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">
@@ -421,7 +421,7 @@ export default function ReimbursementsPage() {
                   {/* Category Filter */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Categories</Label>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                    <div className="space-y-2">
                       {Object.values(Category).map((category) => (
                         <div
                           key={category}
@@ -466,7 +466,7 @@ export default function ReimbursementsPage() {
                       </div>
                       <div>
                         <Label
-                          htmlFor="max-amount"
+                          id="max-amount"
                           className="text-xs text-muted-foreground"
                         >
                           Max Amount
