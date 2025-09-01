@@ -69,7 +69,10 @@ export function FilterDrawer({
       </div>
 
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 80px)' }}>
+      <div
+        className="flex-1 overflow-y-auto p-4"
+        style={{ height: "calc(100vh - 80px)" }}
+      >
         {/* Submitter Type */}
         <section className="mb-6">
           <h6 className="font-medium mb-2">Submitter Type</h6>
