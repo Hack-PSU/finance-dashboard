@@ -50,6 +50,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
+import Fuse from "fuse.js"
 
 type SortOrder = "asc" | "desc";
 
@@ -163,9 +164,33 @@ export default function ReimbursementsPage() {
   const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
+  const { data: allUsers = [] } = useAllUsers();
+  const { data: allOrganizers = [] } = useAllOrganizers();
 
   const { data: finances = [], error } = useAllFinances();
   const updateMutation = useUpdateFinanceStatus();
+
+  // Fuse.js config
+    const fuseOptions = {
+    keys: [
+      {
+        name: 'submitterName',
+        getFn: (finance: FinanceEntity) => {
+          if (finance.submitterType === SubmitterType.USER) {
+            const user = allUsers.find((u) => u.id === finance.submitterId);
+            return user ? `${user.firstName} ${user.lastName}` : "";
+          } else {
+            const organizer = allOrganizers.find((o) => o.id === finance.submitterId);
+            return organizer ? `${organizer.firstName} ${organizer.lastName}` : "";
+          }
+        }
+      },
+      'description'
+    ],
+    threshold: 0.4, // 0.0 = exact match, 1.0 = match anything
+    includeScore: true,
+    minMatchCharLength: 2
+  };
 
   useEffect(() => {
     if (error) {
@@ -196,15 +221,18 @@ export default function ReimbursementsPage() {
     }
   };
 
-  const filteredAndSortedData = useMemo(() => {
-    const filtered = finances.filter((finance) => {
-      // Search filter
-      const searchMatch = searchTerm
-        ? JSON.stringify(finance)
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-        : true;
+    const filteredAndSortedData = useMemo(() => {
+    let filtered = finances;
 
+    // Apply fuzzy search if there's a search term
+    if (searchTerm) {
+      const fuse = new Fuse(finances, fuseOptions);
+      const searchResults = fuse.search(searchTerm);
+      filtered = searchResults.map(result => result.item);
+    }
+
+    // Apply other filters
+    filtered = filtered.filter((finance) => {
       // Type filter
       const typeMatch =
         selectedSubmitterTypes.length === 0 ||
@@ -226,14 +254,7 @@ export default function ReimbursementsPage() {
       const maxMatch =
         !maxAmount || finance.amount <= Number.parseFloat(maxAmount);
 
-      return (
-        searchMatch &&
-        typeMatch &&
-        categoryMatch &&
-        statusMatch &&
-        minMatch &&
-        maxMatch
-      );
+      return typeMatch && categoryMatch && statusMatch && minMatch && maxMatch;
     });
 
     // Sort
@@ -265,6 +286,8 @@ export default function ReimbursementsPage() {
     maxAmount,
     sortColumn,
     sortOrder,
+    allUsers,
+    allOrganizers,
   ]);
 
   const paginatedData = useMemo(() => {
