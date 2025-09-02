@@ -6,7 +6,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/analytics");
+    router.replace("/analytics/general"); // Redirect to /analytics/general
   }, [router]);
 
   return null;
