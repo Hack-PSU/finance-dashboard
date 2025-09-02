@@ -20,11 +20,11 @@ export default function LayoutProvider({
 }) {
   return (
     <>
-      <FirebaseProvider>
+      {/* <FirebaseProvider>
         <QueryClientProvider client={queryClient}>
           <AuthGuard config={{ minimumRole: Role.TEAM, authServerUrl: process.env.NEXT_PUBLIC_AUTH_SERVICE_URL }}>{children}</AuthGuard>
         </QueryClientProvider>
-      </FirebaseProvider>
+      </FirebaseProvider> */}
     </>
   );
 }

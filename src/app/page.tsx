@@ -1,10 +1,13 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="App">
-      <div className="content"></div>
-    </div>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/analytics");
+  }, [router]);
+
+  return null;
 }
