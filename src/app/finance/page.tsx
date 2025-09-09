@@ -146,12 +146,36 @@ function StatusCell({ status, onChange }: StatusCellProps) {
   );
 }
 
+interface DateCellProps {
+  timestamp: number;
+}
+
+function DateCell({ timestamp }: DateCellProps) {
+  const date = new Date(timestamp);
+
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium">
+        {date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })}
+      </span>
+      <span className="text-xs text-muted-foreground">
+        {date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })}
+      </span>
+    </div>
+  );
+}
+
 export default function ReimbursementsPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortColumn, setSortColumn] = useState<keyof FinanceEntity | null>(
-    null,
-  );
+  const [sortColumn, setSortColumn] = useState<keyof FinanceEntity | null>("createdAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -171,7 +195,7 @@ export default function ReimbursementsPage() {
   const updateMutation = useUpdateFinanceStatus();
 
   // Fuse.js config
-    const fuseOptions = {
+  const fuseOptions = {
     keys: [
       {
         name: 'submitterName',
@@ -221,7 +245,7 @@ export default function ReimbursementsPage() {
     }
   };
 
-    const filteredAndSortedData = useMemo(() => {
+  const filteredAndSortedData = useMemo(() => {
     let filtered = finances;
 
     // Apply fuzzy search if there's a search term
@@ -262,6 +286,10 @@ export default function ReimbursementsPage() {
       filtered.sort((a, b) => {
         const aVal = a[sortColumn];
         const bVal = b[sortColumn];
+
+        if (sortColumn === 'createdAt') {
+          return sortOrder === "asc" ? Number(aVal) - Number(bVal) : Number(bVal) - Number(aVal);
+        }
 
         if (typeof aVal === "number" && typeof bVal === "number") {
           return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
@@ -373,14 +401,14 @@ export default function ReimbursementsPage() {
                     0 ||
                     minAmount ||
                     maxAmount) && (
-                    <Badge variant="secondary" className="ml-2">
-                      {selectedSubmitterTypes.length +
-                        selectedCategories.length +
-                        selectedStatuses.length +
-                        (minAmount ? 1 : 0) +
-                        (maxAmount ? 1 : 0)}
-                    </Badge>
-                  )}
+                      <Badge variant="secondary" className="ml-2">
+                        {selectedSubmitterTypes.length +
+                          selectedCategories.length +
+                          selectedStatuses.length +
+                          (minAmount ? 1 : 0) +
+                          (maxAmount ? 1 : 0)}
+                      </Badge>
+                    )}
                 </Button>
               </SheetTrigger>
               <SheetContent className="overflow-y-auto">
@@ -525,6 +553,11 @@ export default function ReimbursementsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>
+                    <SortableHeader column="createdAt">
+                      Date Created
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
                     <SortableHeader column="submitterId">
                       Submitter
                     </SortableHeader>
@@ -551,6 +584,9 @@ export default function ReimbursementsPage() {
                 {paginatedData.length > 0 ? (
                   paginatedData.map((finance) => (
                     <TableRow key={finance.id}>
+                      <TableCell>
+                        <DateCell timestamp={finance.createdAt} />
+                      </TableCell>
                       <TableCell>
                         <SubmitterCell
                           id={finance.submitterId}
@@ -603,7 +639,7 @@ export default function ReimbursementsPage() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="text-center py-8 text-muted-foreground"
                     >
                       No reimbursements found
