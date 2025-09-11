@@ -144,10 +144,50 @@ export const SubmissionStatusCounts = ({
       color: "green",
       label: "Approved",
     },
-    [Status.REJECTED]: {
+    [Status.REJECTED_INVALID_RECEIPT]: {
       icon: <HighlightOff />,
       color: "red",
-      label: "Rejected",
+      label: "Rejected (Invalid Receipt)",
+    },
+    [Status.REJECTED_WRONG_ADDRESS]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Wrong Address)",
+    },
+    [Status.REJECTED_WRONG_DESCRIPTION]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Wrong Description)",
+    },
+    [Status.REJECTED_INCORRECT_AMOUNT]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Incorrect Amount)",
+    },
+    [Status.REJECTED_DUPLICATE_SUBMISSION]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Duplicate Submission)",
+    },
+    [Status.REJECTED_MISSING_INFORMATION]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Missing Information)",
+    },
+    [Status.REJECTED_INELIGIBLE_EXPENSE]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Ineligible Expense)",
+    },
+    [Status.REJECTED_EXPIRED_SUBMISSION]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Expired Submission)",
+    },
+    [Status.REJECTED_OTHER]: {
+      icon: <HighlightOff />,
+      color: "red",
+      label: "Rejected (Other)",
     },
     [Status.PENDING]: {
       icon: <HourglassEmpty />,

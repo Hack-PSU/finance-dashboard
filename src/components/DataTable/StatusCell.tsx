@@ -20,8 +20,17 @@ interface StatusCellProps {
 const statusColors: Record<Status, string> = {
   APPROVED: "#4CAF50",
   PENDING: "#FFA726",
-  REJECTED: "#FF5252",
-  DEPOSIT: "#000000", // Include DEPOSIT status even if not used in UI
+  SUBMITTED_TO_ASA: "#00B8D9",
+  DEPOSIT: "#5E35B1",
+  REJECTED_INVALID_RECEIPT: "#E53935",
+  REJECTED_WRONG_ADDRESS: "#E53935",
+  REJECTED_WRONG_DESCRIPTION: "#E53935",
+  REJECTED_INCORRECT_AMOUNT: "#E53935",
+  REJECTED_DUPLICATE_SUBMISSION: "#E53935",
+  REJECTED_MISSING_INFORMATION: "#E53935",
+  REJECTED_INELIGIBLE_EXPENSE: "#E53935",
+  REJECTED_EXPIRED_SUBMISSION: "#E53935",
+  REJECTED_OTHER: "#E53935",
 };
 // Styled FormControl to apply dynamic border color
 const StyledFormControl = styled(FormControl)<{ status: Status }>(
