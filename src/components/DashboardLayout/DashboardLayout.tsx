@@ -29,7 +29,6 @@ import {
   LogIn,
   Home,
   ReceiptIcon,
-  Settings,
   User,
 } from "lucide-react";
 import Logo from "../../../public/logo.png";
@@ -59,12 +58,7 @@ const menuItems = [
     title: "Invoice",
     path: "/invoice",
     icon: ReceiptIcon,
-  },
-  {
-    title: "Settings",
-    path: "/login",
-    icon: Settings,
-  },
+  }
 ];
 
 function AppSidebar() {
