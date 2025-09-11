@@ -779,9 +779,9 @@ export default function InvoiceGenerator() {
                                   variant="outline"
                                   role="combobox"
                                   aria-expanded={open}
-                                  className="h-8 justify-between text-sm font-normal"
+                                  className="h-8 justify-between text-sm font-normal w-64"
                                 >
-                                  <span className="truncate">
+                                  <span className="truncate overflow-hidden block max-w-[15rem]">
                                     {field.value || "Select or type description..."}
                                   </span>
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
