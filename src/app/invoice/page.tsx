@@ -764,7 +764,7 @@ export default function InvoiceGenerator() {
                     )}
                   </div>
                   <div className="grid grid-cols-6 gap-2 items-end">
-                    <div className="col-span-3 space-y-1">
+                    <div className="col-span-3 space-y-1 min-w-0">
                       <Label className="text-xs">Description</Label>
                       <Controller
                         name={`lineItems.${index}.description`}
@@ -779,10 +779,11 @@ export default function InvoiceGenerator() {
                                   variant="outline"
                                   role="combobox"
                                   aria-expanded={open}
-                                  className="h-8 justify-between text-sm font-normal"
+                                  className="h-8 justify-between text-sm font-normal w-64"
                                 >
-                                  {field.value ||
-                                    "Select or type description..."}
+                                  <span className="truncate overflow-hidden block max-w-[15rem]">
+                                    {field.value || "Select or type description..."}
+                                  </span>
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                               </PopoverTrigger>
