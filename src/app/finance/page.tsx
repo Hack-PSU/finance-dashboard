@@ -99,7 +99,11 @@ function StatusCell({ status, onChange }: StatusCellProps) {
         return "bg-green-100 text-green-800 border-green-200";
       case Status.PENDING:
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case Status.REJECTED:
+      case Status.REJECTED_INVALID_RECEIPT:
+      case Status.REJECTED_WRONG_ADDRESS:
+      case Status.REJECTED_WRONG_DESCRIPTION:
+      case Status.REJECTED_INCORRECT_AMOUNT:
+      case Status.REJECTED_DUPLICATE_SUBMISSION:
         return "bg-red-100 text-red-800 border-red-200";
       case Status.DEPOSIT:
         return "bg-blue-100 text-blue-800 border-blue-200";
@@ -131,9 +135,29 @@ function StatusCell({ status, onChange }: StatusCellProps) {
             Pending
           </Badge>
         </SelectItem>
-        <SelectItem value={Status.REJECTED}>
-          <Badge variant="outline" className={getStatusColor(Status.REJECTED)}>
-            Rejected
+        <SelectItem value={Status.REJECTED_INVALID_RECEIPT}>
+          <Badge variant="outline" className={getStatusColor(Status.REJECTED_INVALID_RECEIPT)}>
+            Invalid Receipt
+          </Badge>
+        </SelectItem>
+        <SelectItem value={Status.REJECTED_WRONG_ADDRESS}>
+          <Badge variant="outline" className={getStatusColor(Status.REJECTED_WRONG_ADDRESS)}>
+            Wrong Address
+          </Badge>
+        </SelectItem>
+        <SelectItem value={Status.REJECTED_WRONG_DESCRIPTION}>
+          <Badge variant="outline" className={getStatusColor(Status.REJECTED_WRONG_DESCRIPTION)}>
+            Wrong Description
+          </Badge>
+        </SelectItem>
+        <SelectItem value={Status.REJECTED_INCORRECT_AMOUNT}>
+          <Badge variant="outline" className={getStatusColor(Status.REJECTED_INCORRECT_AMOUNT)}>
+            Incorrect Amount
+          </Badge>
+        </SelectItem>
+        <SelectItem value={Status.REJECTED_DUPLICATE_SUBMISSION}>
+          <Badge variant="outline" className={getStatusColor(Status.REJECTED_DUPLICATE_SUBMISSION)}>
+            Duplicate Submission
           </Badge>
         </SelectItem>
         <SelectItem value={Status.DEPOSIT}>
