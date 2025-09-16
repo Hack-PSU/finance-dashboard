@@ -92,8 +92,15 @@ export default function OrganizationSpendingAnalytics() {
     const pendingAmount = filteredFinances
       .filter((f) => f.status === Status.PENDING)
       .reduce((sum, f) => sum + f.amount, 0);
+    const REJECTED_STATUSES = [
+      Status.REJECTED_INVALID_RECEIPT,
+      Status.REJECTED_WRONG_ADDRESS,
+      Status.REJECTED_WRONG_DESCRIPTION,
+      Status.REJECTED_INCORRECT_AMOUNT,
+      Status.REJECTED_DUPLICATE_SUBMISSION,
+    ];
     const rejectedAmount = filteredFinances
-      .filter((f) => f.status === Status.REJECTED)
+      .filter((f) => REJECTED_STATUSES.includes(f.status))
       .reduce((sum, f) => sum + f.amount, 0);
 
     const statusCounts = {
@@ -103,9 +110,7 @@ export default function OrganizationSpendingAnalytics() {
       [Status.APPROVED]: filteredFinances.filter(
         (f) => f.status === Status.APPROVED,
       ).length,
-      [Status.REJECTED]: filteredFinances.filter(
-        (f) => f.status === Status.REJECTED,
-      ).length,
+      rejected: filteredFinances.filter((f) => REJECTED_STATUSES.includes(f.status)).length,
       [Status.DEPOSIT]: filteredFinances.filter(
         (f) => f.status === Status.DEPOSIT,
       ).length,
@@ -162,7 +167,7 @@ export default function OrganizationSpendingAnalytics() {
           acc[monthKey].approved += finance.amount;
         if (finance.status === Status.PENDING)
           acc[monthKey].pending += finance.amount;
-        if (finance.status === Status.REJECTED)
+        if (REJECTED_STATUSES.includes(finance.status))
           acc[monthKey].rejected += finance.amount;
 
         return acc;
@@ -303,7 +308,7 @@ export default function OrganizationSpendingAnalytics() {
     },
     {
       name: "Rejected",
-      value: analytics.statusCounts[Status.REJECTED],
+      value: analytics.statusCounts.rejected,
       color: "#ef4444",
     },
     {

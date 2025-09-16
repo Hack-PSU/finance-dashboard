@@ -109,7 +109,11 @@ export default function FinancePage({
         return "bg-green-100 text-green-800 border-green-200";
       case Status.PENDING:
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case Status.REJECTED:
+      case Status.REJECTED_INVALID_RECEIPT:
+      case Status.REJECTED_WRONG_ADDRESS:
+      case Status.REJECTED_WRONG_DESCRIPTION:
+      case Status.REJECTED_INCORRECT_AMOUNT:
+      case Status.REJECTED_DUPLICATE_SUBMISSION:
         return "bg-red-100 text-red-800 border-red-200";
       case Status.DEPOSIT:
         return "bg-blue-100 text-blue-800 border-blue-200";
