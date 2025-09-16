@@ -48,6 +48,8 @@ import {
   Check,
   ChevronsUpDown,
 } from "lucide-react";
+import { useWatch } from "react-hook-form";
+
 
 // Zod schema for invoice validation
 const invoiceSchema = z.object({
@@ -94,11 +96,13 @@ const LINE_ITEM_PRESETS = [
   { label: "Silver Sponsorship Package", price: 3000 },
   { label: "Gold Sponsorship Package", price: 5000 },
   { label: "Platinum Sponsorship Package", price: 8000 },
-  { label: "Sponsored Dinner", price: 2500 },
+  
   { label: "Host a Challenge", price: 2000 },
-  { label: "Sponsored Lunch", price: 2000 },
   { label: "Host a Workshop", price: 1750 },
   { label: "Keynote Speaker", price: 1250 },
+
+  { label: "Sponsored Dinner", price: 2500 },
+  { label: "Sponsored Lunch", price: 2000 },
   { label: "Ice-cream Social", price: 600 },
   { label: "Sponsored Snack", price: 400 },
 ];
@@ -478,6 +482,61 @@ export default function InvoiceGenerator() {
       }
     };
   }, [pdfUrl]);
+
+  // Triggers upon Line Item changes to manage freebies
+  const lineItems = useWatch({ control: form.control, name: "lineItems" });
+
+  useEffect(() => {
+    const platinumSelected = lineItems.some(
+      (item) => item.description === "Platinum Sponsorship Package"
+    );
+    const goldSelected = lineItems.some(
+      (item) => item.description === "Gold Sponsorship Package"
+    );
+
+    const goldFreeItems = ["Host a Challenge"];
+    const platinumFreeItems = ["Host a Challenge", "Keynote Speaker", "Host a Workshop"];
+
+    // Remove any free items that shouldn't be there (using platinum items as list since it includes all of the freebees)
+    platinumFreeItems.forEach((desc) => {
+      const index = lineItems.findIndex(
+        (item) => item.description === desc && item.unitPrice === 0
+      );
+      if (index !== -1) {
+        // Only remove if it’s not part of the selected tier
+        if (
+          (platinumSelected && !platinumFreeItems.includes(lineItems[index].description)) ||
+          (goldSelected && !goldFreeItems.includes(lineItems[index].description)) ||
+          (!platinumSelected && !goldSelected)
+        ) {
+          remove(index);
+        }
+      }
+    });
+
+    // Add freebies for the selected tier
+    if (platinumSelected) {
+      platinumFreeItems.forEach((desc) => {
+        if (!lineItems.some((item) => item.description === desc)) {
+          append({ description: desc, quantity: 1, unitPrice: 0 });
+        }
+      });
+    } else if (goldSelected) {
+      goldFreeItems.forEach((desc) => {
+        if (!lineItems.some((item) => item.description === desc)) {
+          append({ description: desc, quantity: 1, unitPrice: 0 });
+        }
+      });
+    }
+
+    // Regenerate PDF after updating line items
+    const timer = setTimeout(() => {
+      generatePDF(false);
+    }, 300); // debounce
+
+    return () => clearTimeout(timer);
+  }, [lineItems, append, remove]);
+
 
   return (
     <div className="container mx-auto max-w-7xl p-6">
