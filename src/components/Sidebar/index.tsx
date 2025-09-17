@@ -34,7 +34,8 @@ export default function TemporaryDrawer({
       path: "/finance/analytics",
       icon: <BarChartIcon />,
     }, // Added Finance Analytics
-    { text: "Login", path: "/login", icon: <LoginIcon /> },
+    // Removing login tab from sidebar
+    //{ text: "Login", path: "/login", icon: <LoginIcon /> },
   ];
 
   const closeDrawer = () => onOpenChange("close");

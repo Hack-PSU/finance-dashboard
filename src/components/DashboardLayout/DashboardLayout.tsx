@@ -26,7 +26,6 @@ import {
   DollarSign,
   BarChart3,
   Receipt,
-  LogIn,
   Home,
   ReceiptIcon,
   Settings,
@@ -59,12 +58,7 @@ const menuItems = [
     title: "Invoice",
     path: "/invoice",
     icon: ReceiptIcon,
-  },
-  {
-    title: "Settings",
-    path: "/login",
-    icon: Settings,
-  },
+  }
 ];
 
 function AppSidebar() {
@@ -105,18 +99,6 @@ function AppSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/login">
-                <LogIn />
-                <span>Login</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   );
 }
@@ -169,14 +151,6 @@ function MobileNav() {
             );
           })}
           <div className="border-t pt-4 mt-4">
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              <LogIn className="h-4 w-4" />
-              Login
-            </Link>
           </div>
         </nav>
       </SheetContent>
