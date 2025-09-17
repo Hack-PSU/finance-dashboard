@@ -105,6 +105,22 @@ const LINE_ITEM_PRESETS = [
   { label: "Sponsored Lunch", price: 2000 },
   { label: "Ice-cream Social", price: 600 },
   { label: "Sponsored Snack", price: 400 },
+
+  // New items with price 0
+  { label: "Send Mentors", price: 0 },
+  { label: "Sponsor a Challenge", price: 0 },
+  { label: "Present Challenge and Prizes", price: 0 },
+  { label: "Company Table", price: 0 },
+  { label: "Present at Opening Ceremony 2 Mins", price: 0 },
+  { label: "Present at Opening Ceremony 5 Mins", price: 0 },
+  { label: "Access to Resume Book Post Event", price: 0 },
+  { label: "Signage Spotlight", price: 0 },
+  { label: "Distribution of Promotional Material", price: 0 },
+  { label: "Logos on all Platforms", price: 0 },
+  { label: "Logos on T-Shirts Small", price: 0 },
+  { label: "Logos on T-Shirts Medium", price: 0 },
+  { label: "Logos on T-Shirts Large", price: 0 },
+  { label: "Promo Email Pre-Event", price: 0 },
 ];
 
 export default function InvoiceGenerator() {
@@ -483,56 +499,157 @@ export default function InvoiceGenerator() {
     };
   }, [pdfUrl]);
 
+
   // Triggers upon Line Item changes to manage freebies
   const lineItems = useWatch({ control: form.control, name: "lineItems" });
 
+  // Tracks whether freebies for each tier have already been added once
+  const addedTiersRef = useRef({
+    bronze: false,
+    silver: false,
+    gold: false,
+    platinum: false,
+  });
+
   useEffect(() => {
-    const platinumSelected = lineItems.some(
-      (item) => item.description === "Platinum Sponsorship Package"
+    const bronzeSelected = lineItems.some(
+      (item) => item.description === "Bronze Sponsorship Package"
+    );
+    const silverSelected = lineItems.some(
+      (item) => item.description === "Silver Sponsorship Package"
     );
     const goldSelected = lineItems.some(
       (item) => item.description === "Gold Sponsorship Package"
     );
+    const platinumSelected = lineItems.some(
+      (item) => item.description === "Platinum Sponsorship Package"
+    );
+    const bronzeFreeItems = [
+      "Send Mentors",
+      "Company Table",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+    ];
 
-    const goldFreeItems = ["Host a Challenge"];
-    const platinumFreeItems = ["Host a Challenge", "Keynote Speaker", "Host a Workshop"];
+    const silverFreeItems = [
+      "Send Mentors",
+      "Company Table",
+      "Access to Resume Book Post Event",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+      "Logos on T-Shirts Small",
+    ];
 
-    // Remove any free items that shouldn't be there (using platinum items as list since it includes all of the freebees)
-    platinumFreeItems.forEach((desc) => {
-      const index = lineItems.findIndex(
-        (item) => item.description === desc && item.unitPrice === 0
-      );
-      if (index !== -1) {
-        // Only remove if it’s not part of the selected tier
-        if (
-          (platinumSelected && !platinumFreeItems.includes(lineItems[index].description)) ||
-          (goldSelected && !goldFreeItems.includes(lineItems[index].description)) ||
-          (!platinumSelected && !goldSelected)
-        ) {
-          remove(index);
-        }
-      }
-    });
+    const goldFreeItems = [
+      "Send Mentors",
+      "Sponsor a Challenge",
+      "Present Challenge and Prizes",
+      "Company Table", // quantity 2
+      "Present at Opening Ceremony 2 Mins",  
+      "Access to Resume Book Post Event",          
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+      "Logos on T-Shirts Medium",
+    ];
 
-    // Add freebies for the selected tier
-    if (platinumSelected) {
+    const platinumFreeItems = [
+      "Send Mentors",
+      "Sponsor a Challenge",
+      "Present Challenge and Prizes",
+      "Company Table", // quantity 2
+      "Present at Opening Ceremony 5 Mins",
+      "Host a Workshop",
+      "Keynote Speaker",
+      "Access to Resume Book Post Event",
+      "Signage Spotlight",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",      
+      "Logos on T-Shirts Large",
+      "Promo Email Pre-Event",      
+    ];
+
+    // Remove any free items that shouldn't be there when tier is deselected
+    if (!bronzeSelected && !silverSelected && !goldSelected && !platinumSelected) {
+      platinumFreeItems.forEach((desc) => {
+        const index = lineItems.findIndex(
+          (item) => item.description === desc && item.unitPrice === 0
+        );
+        if (index !== -1) remove(index);
+      });
+
+      // Reset added flags when no tier is selected
+      addedTiersRef.current = {
+        bronze: false,
+        silver: false,
+        gold: false,
+        platinum: false,
+      };
+      return;
+    }
+
+    // Add freebies only ONCE per tier selection
+    if (platinumSelected && !addedTiersRef.current.platinum) {
       platinumFreeItems.forEach((desc) => {
         if (!lineItems.some((item) => item.description === desc)) {
-          append({ description: desc, quantity: 1, unitPrice: 0 });
+          append({
+            description: desc,
+            quantity: desc === "Company Table" ? 2 : 1,
+            unitPrice: 0,
+          });
         }
       });
-    } else if (goldSelected) {
+      addedTiersRef.current = {
+        bronze: false,
+        silver: false,
+        gold: false,
+        platinum: true,
+      };
+    } else if (goldSelected && !addedTiersRef.current.gold) {
       goldFreeItems.forEach((desc) => {
+        if (!lineItems.some((item) => item.description === desc)) {
+          append({
+            description: desc,
+            quantity: desc === "Company Table" ? 2 : 1,
+            unitPrice: 0,
+          });
+        }
+      });
+      addedTiersRef.current = {
+        bronze: false,
+        silver: false,
+        gold: true,
+        platinum: false,
+      };
+    } else if (silverSelected && !addedTiersRef.current.silver) {
+      silverFreeItems.forEach((desc) => {
         if (!lineItems.some((item) => item.description === desc)) {
           append({ description: desc, quantity: 1, unitPrice: 0 });
         }
       });
+      addedTiersRef.current = {
+        bronze: false,
+        silver: true,
+        gold: false,
+        platinum: false,
+      };
+    } else if (bronzeSelected && !addedTiersRef.current.bronze) {
+      bronzeFreeItems.forEach((desc) => {
+        if (!lineItems.some((item) => item.description === desc)) {
+          append({ description: desc, quantity: 1, unitPrice: 0 });
+        }
+      });
+      addedTiersRef.current = {
+        bronze: true,
+        silver: false,
+        gold: false,
+        platinum: false,
+      };
     }
 
     // Regenerate PDF after updating line items
     const timer = setTimeout(() => {
       generatePDF(false);
-    }, 300); // debounce
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [lineItems, append, remove]);
