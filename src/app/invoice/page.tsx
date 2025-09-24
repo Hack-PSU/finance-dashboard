@@ -763,8 +763,8 @@ export default function InvoiceGenerator() {
                       </Button>
                     )}
                   </div>
-                  <div className="grid grid-cols-6 gap-2 items-end">
-                    <div className="col-span-3 space-y-1">
+                  <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:gap-2 sm:items-end">
+                    <div className="flex-1 space-y-1">
                       <Label className="text-xs">Description</Label>
                       <Controller
                         name={`lineItems.${index}.description`}
@@ -779,14 +779,14 @@ export default function InvoiceGenerator() {
                                   variant="outline"
                                   role="combobox"
                                   aria-expanded={open}
-                                  className="h-8 justify-between text-sm font-normal"
+                                  className="h-8 justify-between text-sm font-normal w-full"
                                 >
                                   {field.value ||
                                     "Select or type description..."}
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-[300px] p-0">
+                              <PopoverContent className="w-80 p-0" align="start" side="bottom">
                                 <Command>
                                   <CommandInput
                                     placeholder="Search or type custom description..."
@@ -813,11 +813,10 @@ export default function InvoiceGenerator() {
                                           }}
                                         >
                                           <Check
-                                            className={`mr-2 h-4 w-4 ${
-                                              field.value === preset.label
+                                            className={`mr-2 h-4 w-4 ${field.value === preset.label
                                                 ? "opacity-100"
                                                 : "opacity-0"
-                                            }`}
+                                              }`}
                                           />
                                           <div className="flex flex-col">
                                             <span>{preset.label}</span>
@@ -836,7 +835,7 @@ export default function InvoiceGenerator() {
                         }}
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="w-16 space-y-1">
                       <Label className="text-xs">Qty</Label>
                       <Controller
                         name={`lineItems.${index}.quantity`}
@@ -854,7 +853,7 @@ export default function InvoiceGenerator() {
                         )}
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="w-24 space-y-1">
                       <Label className="text-xs">Price</Label>
                       <Controller
                         name={`lineItems.${index}.unitPrice`}
@@ -874,12 +873,12 @@ export default function InvoiceGenerator() {
                         )}
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="w-20 space-y-1">
                       <Label className="text-xs">Total</Label>
                       <div className="h-8 flex items-center text-xs font-medium text-muted-foreground">
                         {formatCurrency(
                           (watchedValues.lineItems?.[index]?.quantity || 0) *
-                            (watchedValues.lineItems?.[index]?.unitPrice || 0),
+                          (watchedValues.lineItems?.[index]?.unitPrice || 0),
                         )}
                       </div>
                     </div>
