@@ -763,8 +763,8 @@ export default function InvoiceGenerator() {
                       </Button>
                     )}
                   </div>
-                  <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:gap-2 sm:items-end">
-                    <div className="flex-1 space-y-1">
+                  <div className="space-y-2">
+                    <div className="space-y-1">
                       <Label className="text-xs">Description</Label>
                       <Controller
                         name={`lineItems.${index}.description`}
@@ -835,51 +835,53 @@ export default function InvoiceGenerator() {
                         }}
                       />
                     </div>
-                    <div className="w-16 space-y-1">
-                      <Label className="text-xs">Qty</Label>
-                      <Controller
-                        name={`lineItems.${index}.quantity`}
-                        control={form.control}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            type="number"
-                            min="1"
-                            className="h-8 text-sm"
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value) || 1)
-                            }
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="w-24 space-y-1">
-                      <Label className="text-xs">Price</Label>
-                      <Controller
-                        name={`lineItems.${index}.unitPrice`}
-                        control={form.control}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder="3000.00"
-                            className="h-8 text-sm"
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value) || 0)
-                            }
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="w-20 space-y-1">
-                      <Label className="text-xs">Total</Label>
-                      <div className="h-8 flex items-center text-xs font-medium text-muted-foreground">
-                        {formatCurrency(
-                          (watchedValues.lineItems?.[index]?.quantity || 0) *
-                          (watchedValues.lineItems?.[index]?.unitPrice || 0),
-                        )}
+                    <div className="flex gap-2 sm:gap-3 xl:gap-2">
+                      <div className="flex-1 sm:w-16 xl:w-16 space-y-1">
+                        <Label className="text-xs">Qty</Label>
+                        <Controller
+                          name={`lineItems.${index}.quantity`}
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              type="number"
+                              min="1"
+                              className="h-8 text-sm"
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value) || 1)
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="flex-1 sm:w-24 xl:w-24 space-y-1">
+                        <Label className="text-xs">Price</Label>
+                        <Controller
+                          name={`lineItems.${index}.unitPrice`}
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="3000.00"
+                              className="h-8 text-sm"
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value) || 0)
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="flex-1 sm:w-20 xl:w-20 space-y-1">
+                        <Label className="text-xs">Total</Label>
+                        <div className="h-8 flex items-center text-xs font-medium text-muted-foreground">
+                          {formatCurrency(
+                            (watchedValues.lineItems?.[index]?.quantity || 0) *
+                            (watchedValues.lineItems?.[index]?.unitPrice || 0),
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
