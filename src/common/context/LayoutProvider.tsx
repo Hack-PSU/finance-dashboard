@@ -2,7 +2,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthGuard, Role } from "./AuthGuard";
 import { FirebaseProvider } from "./FirebaseProvider";
-import { auth } from "@/common/config";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +24,9 @@ export default function LayoutProvider({
           <AuthGuard
             config={{
               minimumRole: Role.TEAM,
-              authServerUrl: process.env.NEXT_PUBLIC_AUTH_SERVICE_URL,
+              authServerUrl:
+                process.env.NEXT_PUBLIC_AUTH_SERVICE_URL ||
+                "https://auth.hackpsu.org",
             }}
           >
             {children}
