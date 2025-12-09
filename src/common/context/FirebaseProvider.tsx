@@ -14,9 +14,26 @@ import { type Auth, type User, signOut } from "firebase/auth";
 import { auth } from "@/common/config/firebase";
 import posthog from "posthog-js";
 
+// Helper to get stored auth token (for staging/local)
+function getStoredAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("__auth_token");
+}
+
+// Helper to store auth token (for staging/local)
+function setStoredAuthToken(token: string) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("__auth_token", token);
+}
+
+// Helper to clear auth token
+function clearStoredAuthToken() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("__auth_token");
+}
+
 // Helper function to get auth service URL from environment
 function getAuthServiceURL(): string {
-  // Use environment variable if set, otherwise default to production
   return process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || "https://auth.hackpsu.org";
 }
 
@@ -45,7 +62,6 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
 
   // Verify session with the auth server (environment-aware)
   const verifySession = useCallback(async () => {
-    // Don't verify session if we're in the middle of logging out
     if (isLoggingOut) {
       console.log("Skipping session verification - logout in progress");
       return;
@@ -55,25 +71,33 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
     console.log("Verifying session with:", authServiceURL);
 
     try {
+      // Get stored auth token (for staging/local)
+      const storedToken = getStoredAuthToken();
+
+      // Build headers
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      // Add Authorization header if we have a stored token
+      if (storedToken) {
+        headers["Authorization"] = `Bearer ${storedToken}`;
+        console.log("Using stored auth token");
+      }
+
       const response = await fetch(`${authServiceURL}/api/sessionUser`, {
         method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        credentials: "include", // Send cookies if available
+        headers,
       });
 
       console.log("Session verification response:", response.status);
 
-      if (response.status === 401) {
-        // No session or session invalid - redirect to login
-        console.log("No valid session, redirecting to login");
-        const currentUrl = encodeURIComponent(window.location.href);
-        window.location.href = `${authServiceURL}/login?returnTo=${currentUrl}`;
-        return;
-      }
-
       if (!response.ok) {
+        // If unauthorized and we had a token, clear it
+        if (response.status === 401 && storedToken) {
+          clearStoredAuthToken();
+        }
         throw new Error(`Session verification failed: ${response.status}`);
       }
 
@@ -150,15 +174,29 @@ export const FirebaseProvider: FC<Props> = ({ children }) => {
       // Clear PostHog identity
       posthog.reset();
 
+      // Get stored auth token
+      const storedToken = getStoredAuthToken();
+
+      // Build headers
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      // Add Authorization header if we have a stored token
+      if (storedToken) {
+        headers["Authorization"] = `Bearer ${storedToken}`;
+      }
+
       // Clear the session on the auth server first
       console.log("Clearing auth server session...");
       await fetch(`${authServiceURL}/api/sessionLogout`, {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       });
+
+      // Clear stored token
+      clearStoredAuthToken();
 
       // Sign out from Firebase
       console.log("Signing out from Firebase...");
