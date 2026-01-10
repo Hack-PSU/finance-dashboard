@@ -1234,10 +1234,10 @@
   dependencies:
     cross-spawn "^7.0.6"
 
-"@posthog/types@1.316.1":
-  version "1.316.1"
-  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.316.1.tgz#19201b38c06167ae7880e9b9a145922539581f17"
-  integrity sha512-rh8GSOnmnwd0fUIBYzQcXt4WYXMg9QPkY0tE46K0eneWYVyqNYXFXzcdf2U37g+ZYNiBq9ubLeCD7h0C0MDJgw==
+"@posthog/types@1.318.1":
+  version "1.318.1"
+  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.318.1.tgz#168f058ef55c36545b07e652a2c59ea8cbd319c5"
+  integrity sha512-FYjHp4wlYvt4xc7MM+zIjfYICY/+lvjby/nOib29psTuUMT3nJXwqWz65QBox6XldaJdeId5F+UW6IOtJ1Q9iA==
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
@@ -2736,6 +2736,13 @@ dompurify@^3.2.4:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.3.0.tgz#aaaadbb83d87e1c2fbb066452416359e5b62ec97"
   integrity sha512-r+f6MYR1gGN1eJv0TVQbhA7if/U7P87cdPl3HN5rikqaBSBxLiCb/b9O+2eG0cxz0ghyU+mU1QkbsOwERMYlWQ==
+  optionalDependencies:
+    "@types/trusted-types" "^2.0.7"
+
+dompurify@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.3.1.tgz#c7e1ddebfe3301eacd6c0c12a4af284936dbbb86"
+  integrity sha512-qkdCKzLNtrgPFP1Vo+98FRzJnBRGe4ffyCea9IwHB1fyxPOeNTHpLKYGd4Uk9xvNoH0ZoOjwZxNptyMwqrId1Q==
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
@@ -4631,15 +4638,17 @@ postcss@^8, postcss@^8.4.47:
     source-map-js "^1.2.1"
 
 posthog-js@^1.257.0:
-  version "1.316.1"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.316.1.tgz#73f2f4b53047c6d6e7a648990e9da8d81f7ee734"
-  integrity sha512-4B0PHnMZwjV9aoQRQ5OqrPa40aCVlqRx1aZMCZCbZ4Z7c91bpOJDpENGGyxFvjUoNN+f8MP8LHZBdn5DPQyWTg==
+  version "1.318.1"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.318.1.tgz#746ce58a91375d987c2e2b66bd897be1f81fc330"
+  integrity sha512-8zG02pcTYILB8At/9P2B2MJjuGq+DY3BeE01I4IPi6bnWNh3hka6+ZQhn9GfgtCQs7Ygk6qMaOxpUFvsDGQaQQ==
   dependencies:
     "@posthog/core" "1.9.1"
-    "@posthog/types" "1.316.1"
+    "@posthog/types" "1.318.1"
     core-js "^3.38.1"
+    dompurify "^3.3.1"
     fflate "^0.4.8"
     preact "^10.19.3"
+    query-selector-shadow-dom "^1.0.1"
     web-vitals "^4.2.4"
 
 posthog-node@^5.5.1:
@@ -4705,6 +4714,11 @@ punycode@^2.1.0:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.3.1.tgz#027422e2faec0b25e1549c3e1bd8309b9133b6e5"
   integrity sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==
+
+query-selector-shadow-dom@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/query-selector-shadow-dom/-/query-selector-shadow-dom-1.0.1.tgz#1c7b0058eff4881ac44f45d8f84ede32e9a2f349"
+  integrity sha512-lT5yCqEBgfoMYpf3F2xQRK7zEr1rhIIZuceDK6+xRkJQ4NMbHTwXqk4NkwDwQMNqXgG9r9fyHnzwNVs6zV5KRw==
 
 queue-microtask@^1.2.2:
   version "1.2.3"
