@@ -150,7 +150,7 @@ export default function InvoiceGenerator() {
         },
       ],
       notes:
-        'PAYMENT INFORMATION*\n\n1. Address a check to "The Pennsylvania State University" with a memo of "HackPSU#1657"\n2. Provide a brief letter (1-2 sentences) saying that you are sponsoring HackPSU and include your company address and contact information\n3. Send both the check and the letter in an enclosed envelope to: 240 HUB Robeson Center, University Park, PA 16802\n',
+        'PAYMENT INFORMATION*\n\n1. Address a check to "The Pennsylvania State University" with a memo of "Hack at Penn State#1657"\n2. Provide a brief letter (1-2 sentences) saying that you are sponsoring Hack at Penn State and include your company address and contact information\n3. Send both the check and the letter in an enclosed envelope to: 240 HUB Robeson Center, University Park, PA 16802\n',
     },
     mode: "onChange",
   });
@@ -233,7 +233,7 @@ export default function InvoiceGenerator() {
 
       doc.setFontSize(11);
       doc.setTextColor(black);
-      doc.text("HackPSU", margin, margin + 1.4);
+      doc.text("Hack at Penn State", margin, margin + 1.4);
       doc.setFontSize(9);
       doc.text("sponsorship@hackpsu.org", margin, margin + 1.6);
       doc.text("240 HUB Robeson Center", margin, margin + 1.8);
