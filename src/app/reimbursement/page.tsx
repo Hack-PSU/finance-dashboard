@@ -126,6 +126,7 @@ const steps = [
 export default function ReimbursementForm() {
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const { user } = useFirebase();
   const createFinance = useCreateFinance();
 
@@ -533,13 +534,45 @@ export default function ReimbursementForm() {
                       </div>
 
                       {field.value && (
-                        <Alert>
-                          <CheckCircle className="h-4 w-4" />
-                          <AlertDescription>
-                            <strong>Selected file:</strong> {field.value.name} (
-                            {(field.value.size / 1024 / 1024).toFixed(2)} MB)
-                          </AlertDescription>
-                        </Alert>
+                        <>
+                          <Alert>
+                            <CheckCircle className="h-4 w-4" />
+                            <AlertDescription>
+                              <strong>Selected file:</strong> {field.value.name} (
+                              {(field.value.size / 1024 / 1024).toFixed(2)} MB)
+                            </AlertDescription>
+                          </Alert>
+
+                          {/* Preview Toggle Button */}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="bg-transparent"
+                            onClick={() => setShowPreview(!showPreview)}
+                          >
+                            {showPreview ? "Hide Preview" : "Show Preview"}
+                          </Button>
+
+                          {/* Preview Section */}
+                          {showPreview && (
+                            <div className="border rounded-lg p-4 bg-muted/50">
+                              <h4 className="font-medium text-sm mb-3">Preview</h4>
+                              {field.value.type === "application/pdf" ? (
+                                <iframe
+                                  src={URL.createObjectURL(field.value)}
+                                  className="w-full h-96 rounded border"
+                                  title="PDF Preview"
+                                />
+                              ) : (
+                                <img
+                                  src={URL.createObjectURL(field.value)}
+                                  alt="Receipt Preview"
+                                  className="max-w-full h-auto max-h-96 rounded border mx-auto"
+                                />
+                              )}
+                            </div>
+                          )}
+                        </>
                       )}
 
                       {errors.receipt && (
