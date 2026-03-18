@@ -618,7 +618,7 @@ export default function ReimbursementsPage() {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        ${finance.amount.toFixed(2)}
+                        ${Number(finance.amount).toFixed(2)}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {finance.description}

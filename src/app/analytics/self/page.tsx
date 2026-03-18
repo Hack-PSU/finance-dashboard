@@ -52,13 +52,13 @@ export default function ProfileAnalytics() {
   const analytics = useMemo(() => {
     if (!userFinances.length) return null;
 
-    const totalAmount = userFinances.reduce((sum, f) => sum + f.amount, 0);
+    const totalAmount = userFinances.reduce((sum, f) => sum + Number(f.amount), 0);
     const approvedAmount = userFinances
       .filter((f) => f.status === Status.APPROVED)
-      .reduce((sum, f) => sum + f.amount, 0);
+      .reduce((sum, f) => sum + Number(f.amount), 0);
     const pendingAmount = userFinances
       .filter((f) => f.status === Status.PENDING)
-      .reduce((sum, f) => sum + f.amount, 0);
+      .reduce((sum, f) => sum + Number(f.amount), 0);
     const REJECTED_STATUSES = [
       Status.REJECTED_INVALID_RECEIPT,
       Status.REJECTED_WRONG_ADDRESS,
@@ -68,7 +68,7 @@ export default function ProfileAnalytics() {
     ];
     const rejectedAmount = userFinances
       .filter((f) => REJECTED_STATUSES.includes(f.status))
-      .reduce((sum, f) => sum + f.amount, 0);
+      .reduce((sum, f) => sum + Number(f.amount), 0);
 
     const statusCounts = {
       [Status.PENDING]: userFinances.filter((f) => f.status === Status.PENDING)
@@ -89,7 +89,7 @@ export default function ProfileAnalytics() {
         return {
           category,
           count: categoryFinances.length,
-          amount: categoryFinances.reduce((sum, f) => sum + f.amount, 0),
+          amount: categoryFinances.reduce((sum, f) => sum + Number(f.amount), 0),
         };
       })
       .filter((item) => item.count > 0)
@@ -104,7 +104,7 @@ export default function ProfileAnalytics() {
         if (!acc[monthKey]) {
           acc[monthKey] = { month: monthKey, amount: 0, count: 0 };
         }
-        acc[monthKey].amount += finance.amount;
+        acc[monthKey].amount += Number(finance.amount);
         acc[monthKey].count += 1;
         return acc;
       },

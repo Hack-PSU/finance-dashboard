@@ -85,13 +85,13 @@ export default function OrganizationSpendingAnalytics() {
       );
     }
 
-    const totalAmount = filteredFinances.reduce((sum, f) => sum + f.amount, 0);
+    const totalAmount = filteredFinances.reduce((sum, f) => sum + Number(f.amount), 0);
     const approvedAmount = filteredFinances
       .filter((f) => f.status === Status.APPROVED)
-      .reduce((sum, f) => sum + f.amount, 0);
+      .reduce((sum, f) => sum + Number(f.amount), 0);
     const pendingAmount = filteredFinances
       .filter((f) => f.status === Status.PENDING)
-      .reduce((sum, f) => sum + f.amount, 0);
+      .reduce((sum, f) => sum + Number(f.amount), 0);
     const REJECTED_STATUSES = [
       Status.REJECTED_INVALID_RECEIPT,
       Status.REJECTED_WRONG_ADDRESS,
@@ -101,7 +101,7 @@ export default function OrganizationSpendingAnalytics() {
     ];
     const rejectedAmount = filteredFinances
       .filter((f) => REJECTED_STATUSES.includes(f.status))
-      .reduce((sum, f) => sum + f.amount, 0);
+      .reduce((sum, f) => sum + Number(f.amount), 0);
 
     const statusCounts = {
       [Status.PENDING]: filteredFinances.filter(
@@ -128,15 +128,15 @@ export default function OrganizationSpendingAnalytics() {
         return {
           category,
           count: categoryFinances.length,
-          amount: categoryFinances.reduce((sum, f) => sum + f.amount, 0),
+          amount: categoryFinances.reduce((sum, f) => sum + Number(f.amount), 0),
           approvedAmount: approvedInCategory.reduce(
-            (sum, f) => sum + f.amount,
+            (sum, f) => sum + Number(f.amount),
             0,
           ),
           approvedCount: approvedInCategory.length,
           avgAmount:
             categoryFinances.length > 0
-              ? categoryFinances.reduce((sum, f) => sum + f.amount, 0) /
+              ? categoryFinances.reduce((sum, f) => sum + Number(f.amount), 0) /
                 categoryFinances.length
               : 0,
         };
@@ -160,15 +160,15 @@ export default function OrganizationSpendingAnalytics() {
             count: 0,
           };
         }
-        acc[monthKey].total += finance.amount;
+        acc[monthKey].total += Number(finance.amount);
         acc[monthKey].count += 1;
 
         if (finance.status === Status.APPROVED)
-          acc[monthKey].approved += finance.amount;
+          acc[monthKey].approved += Number(finance.amount);
         if (finance.status === Status.PENDING)
-          acc[monthKey].pending += finance.amount;
+          acc[monthKey].pending += Number(finance.amount);
         if (REJECTED_STATUSES.includes(finance.status))
-          acc[monthKey].rejected += finance.amount;
+          acc[monthKey].rejected += Number(finance.amount);
 
         return acc;
       },
@@ -202,11 +202,11 @@ export default function OrganizationSpendingAnalytics() {
             approvedCount: 0,
           };
         }
-        acc[finance.submitterId].totalAmount += finance.amount;
+        acc[finance.submitterId].totalAmount += Number(finance.amount);
         acc[finance.submitterId].count += 1;
 
         if (finance.status === Status.APPROVED) {
-          acc[finance.submitterId].approvedAmount += finance.amount;
+          acc[finance.submitterId].approvedAmount += Number(finance.amount);
           acc[finance.submitterId].approvedCount += 1;
         }
 
@@ -241,7 +241,7 @@ export default function OrganizationSpendingAnalytics() {
         f.createdAt >= previousPeriodStart && f.createdAt < previousPeriodEnd,
     );
     const previousPeriodTotal = previousPeriodFinances.reduce(
-      (sum, f) => sum + f.amount,
+      (sum, f) => sum + Number(f.amount),
       0,
     );
     const spendingTrend =
