@@ -311,8 +311,10 @@ export default function ReimbursementsPage() {
         const aVal = a[sortColumn];
         const bVal = b[sortColumn];
 
-        if (sortColumn === 'createdAt') {
-          return sortOrder === "asc" ? Number(aVal) - Number(bVal) : Number(bVal) - Number(aVal);
+        if (sortColumn === 'createdAt' || sortColumn === 'updatedAt') {
+          const aNum = Number(aVal ?? 0);
+          const bNum = Number(bVal ?? 0);
+          return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
         }
 
         if (typeof aVal === "number" && typeof bVal === "number") {
@@ -582,6 +584,11 @@ export default function ReimbursementsPage() {
                     </SortableHeader>
                   </TableHead>
                   <TableHead>
+                    <SortableHeader column="updatedAt">
+                      Updated At
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
                     <SortableHeader column="submitterId">
                       Submitter
                     </SortableHeader>
@@ -610,6 +617,13 @@ export default function ReimbursementsPage() {
                     <TableRow key={finance.id}>
                       <TableCell>
                         <DateCell timestamp={finance.createdAt} />
+                      </TableCell>
+                      <TableCell>
+                        {finance.updatedAt ? (
+                          <DateCell timestamp={finance.updatedAt} />
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <SubmitterCell
@@ -663,7 +677,7 @@ export default function ReimbursementsPage() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center py-8 text-muted-foreground"
                     >
                       No reimbursements found

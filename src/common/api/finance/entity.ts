@@ -104,6 +104,7 @@ export interface FinanceEntity {
   description: string;
   category: Category;
   createdAt: number;
+  updatedAt?: number;
   updatedBy?: string;
   street: string;
   city: string;
