@@ -31,6 +31,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Table,
   TableBody,
   TableCell,
@@ -215,6 +224,14 @@ export default function ReimbursementsPage() {
   const { data: allUsers = [] } = useAllUsers();
   const { data: allOrganizers = [] } = useAllOrganizers();
 
+  // Rejection dialog state
+  const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
+  const [pendingRejection, setPendingRejection] = useState<{
+    id: string;
+    status: Status;
+  } | null>(null);
+  const [rejectionMessage, setRejectionMessage] = useState("");
+
   const { data: finances = [], error } = useAllFinances();
   const updateMutation = useUpdateFinanceStatus();
 
@@ -247,11 +264,45 @@ export default function ReimbursementsPage() {
   }, [error]);
 
   const handleStatusUpdate = (id: string, newStatus: Status) => {
+    if (newStatus.startsWith("REJECTED")) {
+      setPendingRejection({ id, status: newStatus });
+      setRejectionMessage("");
+      setRejectionDialogOpen(true);
+      return;
+    }
+
     updateMutation.mutate(
       { id, data: { status: newStatus } },
       {
         onSuccess: () => {
           toast.success(`Status updated to ${newStatus}`);
+        },
+        onError: (error: Error) => {
+          toast.error(error.message);
+        },
+      },
+    );
+  };
+
+  const confirmRejection = () => {
+    if (!pendingRejection) return;
+
+    updateMutation.mutate(
+      {
+        id: pendingRejection.id,
+        data: {
+          status: pendingRejection.status,
+          ...(rejectionMessage.trim() && {
+            rejectionMessage: rejectionMessage.trim(),
+          }),
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success(`Status updated to ${pendingRejection.status}`);
+          setRejectionDialogOpen(false);
+          setPendingRejection(null);
+          setRejectionMessage("");
         },
         onError: (error: Error) => {
           toast.error(error.message);
@@ -732,6 +783,53 @@ export default function ReimbursementsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={rejectionDialogOpen}
+        onOpenChange={(open) => {
+          setRejectionDialogOpen(open);
+          if (!open) {
+            setPendingRejection(null);
+            setRejectionMessage("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Reimbursement</DialogTitle>
+            <DialogDescription>
+              Optionally provide a reason for rejecting this reimbursement. This
+              message will be included in the notification email to the
+              submitter.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Enter rejection reason (optional)..."
+            value={rejectionMessage}
+            onChange={(e) => setRejectionMessage(e.target.value)}
+            rows={3}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectionDialogOpen(false);
+                setPendingRejection(null);
+                setRejectionMessage("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmRejection}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? "Rejecting..." : "Confirm Rejection"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
