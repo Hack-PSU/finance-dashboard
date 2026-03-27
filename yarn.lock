@@ -512,7 +512,7 @@
   resolved "https://registry.yarnpkg.com/@firebase/auth-types/-/auth-types-0.13.0.tgz#ae6e0015e3bd4bfe18edd0942b48a0a118a098d9"
   integrity sha512-S/PuIjni0AQRLF+l9ck0YpsMOdE8GO2KU6ubmBB7P+7TJUCQDa3R1dlgYm9UzGbbePMZsp0xzB93f2b/CgxMOg==
 
-"@firebase/auth@1.12.1", "@firebase/auth@^1.8.1":
+"@firebase/auth@1.12.1":
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/@firebase/auth/-/auth-1.12.1.tgz#5eb1c3bf99dfbe7025578a5f1439cc073a4183f0"
   integrity sha512-nXKj7d5bMBlnq6XpcQQpmnSVwEeHBkoVbY/+Wk0P1ebLSICoH4XPtvKOFlXKfIHmcS84mLQ99fk3njlDGKSDtw==
@@ -522,12 +522,30 @@
     "@firebase/util" "1.14.0"
     tslib "^2.1.0"
 
+"@firebase/auth@^1.8.1":
+  version "1.12.2"
+  resolved "https://registry.yarnpkg.com/@firebase/auth/-/auth-1.12.2.tgz#3ba2d6838f7174d3b9a4fc52bf498ca2f0ef34a5"
+  integrity sha512-CZJL8V10Vzibs+pDTXdQF+hot1IigIoqF4a4lA/qr5Deo1srcefiyIfgg28B67Lk7IxZhwfJMuI+1bu2xBmV0A==
+  dependencies:
+    "@firebase/component" "0.7.2"
+    "@firebase/logger" "0.5.0"
+    "@firebase/util" "1.15.0"
+    tslib "^2.1.0"
+
 "@firebase/component@0.7.1":
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/@firebase/component/-/component-0.7.1.tgz#f16376146d77034ac5055834de25405e6c011491"
   integrity sha512-mFzsm7CLHR60o08S23iLUY8m/i6kLpOK87wdEFPLhdlCahaxKmWOwSVGiWoENYSmFJJoDhrR3gKSCxz7ENdIww==
   dependencies:
     "@firebase/util" "1.14.0"
+    tslib "^2.1.0"
+
+"@firebase/component@0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@firebase/component/-/component-0.7.2.tgz#82a87848ad389d6037019745c973e4f2779a6983"
+  integrity sha512-iyVDGc6Vjx7Rm0cAdccLH/NG6fADsgJak/XW9IA2lPf8AjIlsemOpFGKczYyPHxm4rnKdR8z6sK4+KEC7NwmEg==
+  dependencies:
+    "@firebase/util" "1.15.0"
     tslib "^2.1.0"
 
 "@firebase/data-connect@0.4.0":
@@ -777,6 +795,13 @@
   version "1.14.0"
   resolved "https://registry.yarnpkg.com/@firebase/util/-/util-1.14.0.tgz#e0a5998fc30a065fe5cba8bd7546ae8f095f3d3e"
   integrity sha512-/gnejm7MKkVIXnSJGpc9L2CvvvzJvtDPeAEq5jAwgVlf/PeNxot+THx/bpD20wQ8uL5sz0xqgXy1nisOYMU+mw==
+  dependencies:
+    tslib "^2.1.0"
+
+"@firebase/util@1.15.0":
+  version "1.15.0"
+  resolved "https://registry.yarnpkg.com/@firebase/util/-/util-1.15.0.tgz#783c1a67dc0690dbe3afca668174c11368843008"
+  integrity sha512-AmWf3cHAOMbrCPG4xdPKQaj5iHnyYfyLKZxwz+Xf55bqKbpAmcYifB4jQinT2W9XhDRHISOoPyBOariJpCG6FA==
   dependencies:
     tslib "^2.1.0"
 
