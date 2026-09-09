@@ -410,6 +410,17 @@ export default function FinancePage({
                   {new Date(finance.createdAt).toLocaleString()}
                 </p>
               </div>
+              {finance.updatedAt && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label>Updated At</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(finance.updatedAt).toLocaleString()}
+                    </p>
+                  </div>
+                </>
+              )}
               {finance.updatedBy && (
                 <>
                   <Separator />
