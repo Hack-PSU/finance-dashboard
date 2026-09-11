@@ -92,35 +92,41 @@ const PAYMENT_TERMS_OPTIONS = [
 ];
 
 const LINE_ITEM_PRESETS = [
-  { label: "Bronze Sponsorship Package", price: 1500 },
-  { label: "Silver Sponsorship Package", price: 3000 },
-  { label: "Gold Sponsorship Package", price: 5000 },
-  { label: "Platinum Sponsorship Package", price: 8000 },
-  
+  { label: "Bronze Sponsorship Package (Half-Year)", price: 750 },
+  { label: "Bronze Sponsorship Package (Full-Year)", price: 1300 },
+  { label: "Silver Sponsorship Package (Half-Year)", price: 1000 },
+  { label: "Silver Sponsorship Package (Full-Year)", price: 1800 },
+  { label: "Gold Sponsorship Package (Half-Year)", price: 1500 },
+  { label: "Gold Sponsorship Package (Full-Year)", price: 2500 },
+  { label: "Platinum Sponsorship Package (Half-Year)", price: 3000 },
+  { label: "Platinum Sponsorship Package (Full-Year)", price: 5000 },
+  { label: "Diamond Sponsorship Package (Half-Year)", price: 5000 },
+  { label: "Diamond Sponsorship Package (Full-Year)", price: 8500 },
+  { label: "Sapphire Sponsorship Package (Half-Year)", price: 8000 },
+  { label: "Sapphire Sponsorship Package (Full-Year)", price: 14000 },
+
   { label: "Host a Challenge", price: 2000 },
   { label: "Host a Workshop", price: 1750 },
-  { label: "Keynote Speaker", price: 1250 },
 
   { label: "Sponsored Dinner", price: 2500 },
   { label: "Sponsored Lunch", price: 2000 },
   { label: "Ice-cream Social", price: 600 },
   { label: "Sponsored Snack", price: 400 },
 
-  // New items with price 0
+  // Perks added automatically when a tier package is selected (price 0)
   { label: "Send Mentors", price: 0 },
   { label: "Sponsor a Challenge", price: 0 },
-  { label: "Present Challenge and Prizes", price: 0 },
   { label: "Company Table", price: 0 },
-  { label: "Present at Opening Ceremony 2 Mins", price: 0 },
-  { label: "Present at Opening Ceremony 5 Mins", price: 0 },
-  { label: "Access to Resume Book Post Event", price: 0 },
-  { label: "Signage Spotlight", price: 0 },
+  { label: "Present at Opening Ceremony", price: 0 },
+  { label: "Resume Book Access", price: 0 },
   { label: "Distribution of Promotional Material", price: 0 },
+  { label: "On-Site Recruiting", price: 0 },
+  { label: "Dedicated Recruiting Time Block", price: 0 },
+  { label: "Post-Event Top Teams/Projects Priority Access", price: 0 },
   { label: "Logos on all Platforms", price: 0 },
-  { label: "Logos on T-Shirts Small", price: 0 },
-  { label: "Logos on T-Shirts Medium", price: 0 },
-  { label: "Logos on T-Shirts Large", price: 0 },
+  { label: "Logos on T-Shirts", price: 0 },
   { label: "Promo Email Pre-Event", price: 0 },
+  { label: "Social Media Promotion", price: 0 },
 ];
 
 export default function InvoiceGenerator() {
@@ -509,68 +515,116 @@ export default function InvoiceGenerator() {
     silver: false,
     gold: false,
     platinum: false,
+    diamond: false,
+    sapphire: false,
   });
 
   useEffect(() => {
-    const bronzeSelected = lineItems.some(
-      (item) => item.description === "Bronze Sponsorship Package"
-    );
-    const silverSelected = lineItems.some(
-      (item) => item.description === "Silver Sponsorship Package"
-    );
-    const goldSelected = lineItems.some(
-      (item) => item.description === "Gold Sponsorship Package"
-    );
-    const platinumSelected = lineItems.some(
-      (item) => item.description === "Platinum Sponsorship Package"
-    );
+    const isTierSelected = (tier: string) =>
+      lineItems.some(
+        (item) =>
+          item.description === `${tier} Sponsorship Package (Half-Year)` ||
+          item.description === `${tier} Sponsorship Package (Full-Year)`,
+      );
+
+    const bronzeSelected = isTierSelected("Bronze");
+    const silverSelected = isTierSelected("Silver");
+    const goldSelected = isTierSelected("Gold");
+    const platinumSelected = isTierSelected("Platinum");
+    const diamondSelected = isTierSelected("Diamond");
+    const sapphireSelected = isTierSelected("Sapphire");
+
     const bronzeFreeItems = [
       "Send Mentors",
       "Company Table",
       "Distribution of Promotional Material",
-      "Logos on all Platforms",
+      "Social Media Promotion",
     ];
 
     const silverFreeItems = [
       "Send Mentors",
       "Company Table",
-      "Access to Resume Book Post Event",
       "Distribution of Promotional Material",
       "Logos on all Platforms",
-      "Logos on T-Shirts Small",
+      "Logos on T-Shirts",
+      "Social Media Promotion",
     ];
 
     const goldFreeItems = [
       "Send Mentors",
-      "Sponsor a Challenge",
-      "Present Challenge and Prizes",
-      "Company Table", // quantity 2
-      "Present at Opening Ceremony 2 Mins",  
-      "Access to Resume Book Post Event",          
+      "Company Table",
       "Distribution of Promotional Material",
       "Logos on all Platforms",
-      "Logos on T-Shirts Medium",
+      "Logos on T-Shirts",
+      "Promo Email Pre-Event",
+      "Social Media Promotion",
     ];
 
     const platinumFreeItems = [
       "Send Mentors",
-      "Sponsor a Challenge",
-      "Present Challenge and Prizes",
-      "Company Table", // quantity 2
-      "Present at Opening Ceremony 5 Mins",
+      "Company Table",
       "Host a Workshop",
-      "Keynote Speaker",
-      "Access to Resume Book Post Event",
-      "Signage Spotlight",
+      "Resume Book Access",
       "Distribution of Promotional Material",
-      "Logos on all Platforms",      
-      "Logos on T-Shirts Large",
-      "Promo Email Pre-Event",      
+      "Logos on all Platforms",
+      "Logos on T-Shirts",
+      "Promo Email Pre-Event",
+      "Social Media Promotion",
     ];
 
-    // Remove any free items that shouldn't be there when tier is deselected
-    if (!bronzeSelected && !silverSelected && !goldSelected && !platinumSelected) {
-      platinumFreeItems.forEach((desc) => {
+    const diamondFreeItems = [
+      "Send Mentors",
+      "Sponsor a Challenge",
+      "Company Table", // quantity 2
+      "Present at Opening Ceremony",
+      "Host a Workshop",
+      "Resume Book Access",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+      "Logos on T-Shirts",
+      "Promo Email Pre-Event",
+      "Social Media Promotion",
+    ];
+
+    const sapphireFreeItems = [
+      "Send Mentors",
+      "Sponsor a Challenge",
+      "Company Table", // quantity 2
+      "Present at Opening Ceremony",
+      "Host a Workshop",
+      "Resume Book Access",
+      "Distribution of Promotional Material",
+      "On-Site Recruiting",
+      "Dedicated Recruiting Time Block",
+      "Post-Event Top Teams/Projects Priority Access",
+      "Logos on all Platforms",
+      "Logos on T-Shirts",
+      "Promo Email Pre-Event",
+      "Social Media Promotion",
+    ];
+
+    // All possible freebie descriptions, used to clear stale ones on tier switch
+    const allFreeItems = Array.from(
+      new Set([
+        ...bronzeFreeItems,
+        ...silverFreeItems,
+        ...goldFreeItems,
+        ...platinumFreeItems,
+        ...diamondFreeItems,
+        ...sapphireFreeItems,
+      ]),
+    );
+
+    // Remove any free items that shouldn't be there when no tier is selected
+    if (
+      !bronzeSelected &&
+      !silverSelected &&
+      !goldSelected &&
+      !platinumSelected &&
+      !diamondSelected &&
+      !sapphireSelected
+    ) {
+      allFreeItems.forEach((desc) => {
         const index = lineItems.findIndex(
           (item) => item.description === desc && item.unitPrice === 0
         );
@@ -583,66 +637,84 @@ export default function InvoiceGenerator() {
         silver: false,
         gold: false,
         platinum: false,
+        diamond: false,
+        sapphire: false,
       };
       return;
     }
 
-    // Add freebies only ONCE per tier selection
-    if (platinumSelected && !addedTiersRef.current.platinum) {
-      platinumFreeItems.forEach((desc) => {
+    // Add freebies only ONCE per tier selection (highest tier wins if multiple selected)
+    const addFreeItems = (items: string[]) => {
+      items.forEach((desc) => {
         if (!lineItems.some((item) => item.description === desc)) {
           append({
             description: desc,
-            quantity: desc === "Company Table" ? 2 : 1,
+            quantity: desc === "Company Table" && (diamondSelected || sapphireSelected) ? 2 : 1,
             unitPrice: 0,
           });
         }
       });
+    };
+
+    if (sapphireSelected && !addedTiersRef.current.sapphire) {
+      addFreeItems(sapphireFreeItems);
+      addedTiersRef.current = {
+        bronze: false,
+        silver: false,
+        gold: false,
+        platinum: false,
+        diamond: false,
+        sapphire: true,
+      };
+    } else if (diamondSelected && !addedTiersRef.current.diamond) {
+      addFreeItems(diamondFreeItems);
+      addedTiersRef.current = {
+        bronze: false,
+        silver: false,
+        gold: false,
+        platinum: false,
+        diamond: true,
+        sapphire: false,
+      };
+    } else if (platinumSelected && !addedTiersRef.current.platinum) {
+      addFreeItems(platinumFreeItems);
       addedTiersRef.current = {
         bronze: false,
         silver: false,
         gold: false,
         platinum: true,
+        diamond: false,
+        sapphire: false,
       };
     } else if (goldSelected && !addedTiersRef.current.gold) {
-      goldFreeItems.forEach((desc) => {
-        if (!lineItems.some((item) => item.description === desc)) {
-          append({
-            description: desc,
-            quantity: desc === "Company Table" ? 2 : 1,
-            unitPrice: 0,
-          });
-        }
-      });
+      addFreeItems(goldFreeItems);
       addedTiersRef.current = {
         bronze: false,
         silver: false,
         gold: true,
         platinum: false,
+        diamond: false,
+        sapphire: false,
       };
     } else if (silverSelected && !addedTiersRef.current.silver) {
-      silverFreeItems.forEach((desc) => {
-        if (!lineItems.some((item) => item.description === desc)) {
-          append({ description: desc, quantity: 1, unitPrice: 0 });
-        }
-      });
+      addFreeItems(silverFreeItems);
       addedTiersRef.current = {
         bronze: false,
         silver: true,
         gold: false,
         platinum: false,
+        diamond: false,
+        sapphire: false,
       };
     } else if (bronzeSelected && !addedTiersRef.current.bronze) {
-      bronzeFreeItems.forEach((desc) => {
-        if (!lineItems.some((item) => item.description === desc)) {
-          append({ description: desc, quantity: 1, unitPrice: 0 });
-        }
-      });
+      addFreeItems(bronzeFreeItems);
       addedTiersRef.current = {
         bronze: true,
         silver: false,
         gold: false,
         platinum: false,
+        diamond: false,
+        sapphire: false,
       };
     }
 
