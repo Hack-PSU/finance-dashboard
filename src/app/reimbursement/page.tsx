@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,6 +33,7 @@ import {
   FileText,
   MapPin,
   Receipt,
+  Landmark,
   CheckCircle,
   AlertCircle,
   ArrowLeft,
@@ -46,6 +47,7 @@ import {
   useCreateFinance,
   Category,
 } from "@/common/api/finance";
+import { mergeReceiptAndBankStatement } from "@/lib/pdf";
 
 // Zod schema
 const reimbursementSchema = z.object({
@@ -96,6 +98,14 @@ const reimbursementSchema = z.object({
         ),
       "Only PDF, JPEG, and PNG files are allowed",
     ),
+  bankStatement: z
+    .any()
+    .refine((file) => file instanceof File, "Bank statement is required")
+    .refine((file) => file?.size <= 5000000, "File size must be less than 5MB")
+    .refine(
+      (file) => file?.type === "application/pdf",
+      "Only PDF files are allowed",
+    ),
 });
 
 type ReimbursementFormData = z.infer<typeof reimbursementSchema>;
@@ -117,8 +127,8 @@ const steps = [
   },
   {
     id: 3,
-    title: "Receipt Upload",
-    description: "Upload your receipt",
+    title: "Receipt & Bank Statement",
+    description: "Upload your receipt and bank statement",
     icon: Receipt,
   },
 ];
@@ -127,6 +137,11 @@ export default function ReimbursementForm() {
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [combinedPreviewUrl, setCombinedPreviewUrl] = useState<string | null>(
+    null,
+  );
+  const [isMergingPreview, setIsMergingPreview] = useState(false);
+  const [mergeError, setMergeError] = useState<string | null>(null);
   const { user } = useFirebase();
   const createFinance = useCreateFinance();
 
@@ -141,6 +156,7 @@ export default function ReimbursementForm() {
       state: "",
       postalCode: "",
       receipt: undefined,
+      bankStatement: undefined,
     },
     mode: "onChange",
   });
@@ -157,6 +173,46 @@ export default function ReimbursementForm() {
   const watchedValues = watch();
   const progress = ((activeStep + 1) / steps.length) * 100;
 
+  useEffect(() => {
+    const receiptFile = watchedValues.receipt;
+    const bankStatementFile = watchedValues.bankStatement;
+
+    if (!(receiptFile instanceof File) || !(bankStatementFile instanceof File)) {
+      setCombinedPreviewUrl(null);
+      setMergeError(null);
+      return;
+    }
+
+    let cancelled = false;
+    let objectUrl: string | null = null;
+
+    setIsMergingPreview(true);
+    setMergeError(null);
+
+    mergeReceiptAndBankStatement(receiptFile, bankStatementFile)
+      .then((mergedFile) => {
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(mergedFile);
+        setCombinedPreviewUrl(objectUrl);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("Failed to combine receipt and bank statement", error);
+        setMergeError(
+          "Could not combine the receipt and bank statement. Make sure both files are valid.",
+        );
+        setCombinedPreviewUrl(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsMergingPreview(false);
+      });
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [watchedValues.receipt, watchedValues.bankStatement]);
+
   const onSubmit = async (data: ReimbursementFormData) => {
     if (!user?.uid) {
       toast.error("You must be logged in to submit a reimbursement");
@@ -166,11 +222,16 @@ export default function ReimbursementForm() {
     try {
       setIsSubmitting(true);
 
+      const combinedFile = await mergeReceiptAndBankStatement(
+        data.receipt,
+        data.bankStatement,
+      );
+
       const formData = new FormData();
-      formData.append("receipt", data.receipt);
+      formData.append("receipt", combinedFile);
 
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== "receipt") {
+        if (key !== "receipt" && key !== "bankStatement") {
           formData.append(key, String(value));
         }
       });
@@ -216,7 +277,7 @@ export default function ReimbursementForm() {
       case 1:
         return ["street", "city", "state", "postalCode"];
       case 2:
-        return ["receipt"];
+        return ["receipt", "bankStatement"];
       default:
         return [];
     }
@@ -490,102 +551,174 @@ export default function ReimbursementForm() {
               </div>
             )}
 
-            {/* Step 2: Receipt Upload */}
+            {/* Step 2: Receipt & Bank Statement Upload */}
             {activeStep === 2 && (
               <div className="space-y-6">
-                <Controller
-                  name="receipt"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="space-y-4">
-                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-muted-foreground/50 transition-colors">
-                        <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-medium">
-                            Upload Receipt
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            Drag and drop your receipt here, or click to browse
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Supports PDF, JPEG, PNG files up to 5MB
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="mt-4 bg-transparent"
-                          onClick={() =>
-                            document.getElementById("receipt-upload")?.click()
-                          }
-                        >
-                          Choose File
-                        </Button>
-                        <input
-                          id="receipt-upload"
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            field.onChange(file);
-                          }}
-                        />
-                      </div>
-
-                      {field.value && (
-                        <>
-                          <Alert>
-                            <CheckCircle className="h-4 w-4" />
-                            <AlertDescription>
-                              <strong>Selected file:</strong> {field.value.name} (
-                              {(field.value.size / 1024 / 1024).toFixed(2)} MB)
-                            </AlertDescription>
-                          </Alert>
-
-                          {/* Preview Toggle Button */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Controller
+                    name="receipt"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="space-y-4">
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors">
+                          <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                          <div className="space-y-1">
+                            <h3 className="text-base font-medium">
+                              Upload Receipt
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              PDF, JPEG, or PNG up to 5MB
+                            </p>
+                          </div>
                           <Button
                             type="button"
                             variant="outline"
-                            className="bg-transparent"
-                            onClick={() => setShowPreview(!showPreview)}
+                            className="mt-3 bg-transparent"
+                            onClick={() =>
+                              document.getElementById("receipt-upload")?.click()
+                            }
                           >
-                            {showPreview ? "Hide Preview" : "Show Preview"}
+                            Choose File
                           </Button>
+                          <input
+                            id="receipt-upload"
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              field.onChange(file);
+                            }}
+                          />
+                        </div>
 
-                          {/* Preview Section */}
-                          {showPreview && (
-                            <div className="border rounded-lg p-4 bg-muted/50">
-                              <h4 className="font-medium text-sm mb-3">Preview</h4>
-                              {field.value.type === "application/pdf" ? (
-                                <iframe
-                                  src={URL.createObjectURL(field.value)}
-                                  className="w-full h-96 rounded border"
-                                  title="PDF Preview"
-                                />
-                              ) : (
-                                <img
-                                  src={URL.createObjectURL(field.value)}
-                                  alt="Receipt Preview"
-                                  className="max-w-full h-auto max-h-96 rounded border mx-auto"
-                                />
-                              )}
-                            </div>
-                          )}
-                        </>
-                      )}
+                        {field.value && (
+                          <Alert>
+                            <CheckCircle className="h-4 w-4" />
+                            <AlertDescription className="text-xs">
+                              <strong>{field.value.name}</strong> (
+                              {(field.value.size / 1024 / 1024).toFixed(2)} MB)
+                            </AlertDescription>
+                          </Alert>
+                        )}
 
-                      {errors.receipt && (
+                        {errors.receipt && (
+                          <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                              {errors.receipt.message as string}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    )}
+                  />
+
+                  <Controller
+                    name="bankStatement"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="space-y-4">
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors">
+                          <Landmark className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                          <div className="space-y-1">
+                            <h3 className="text-base font-medium">
+                              Upload Bank Statement
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              PDF up to 5MB
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="mt-3 bg-transparent"
+                            onClick={() =>
+                              document
+                                .getElementById("bank-statement-upload")
+                                ?.click()
+                            }
+                          >
+                            Choose File
+                          </Button>
+                          <input
+                            id="bank-statement-upload"
+                            type="file"
+                            accept=".pdf"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              field.onChange(file);
+                            }}
+                          />
+                        </div>
+
+                        {field.value && (
+                          <Alert>
+                            <CheckCircle className="h-4 w-4" />
+                            <AlertDescription className="text-xs">
+                              <strong>{field.value.name}</strong> (
+                              {(field.value.size / 1024 / 1024).toFixed(2)} MB)
+                            </AlertDescription>
+                          </Alert>
+                        )}
+
+                        {errors.bankStatement && (
+                          <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                              {errors.bankStatement.message as string}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    )}
+                  />
+                </div>
+
+                {watchedValues.receipt instanceof File &&
+                  watchedValues.bankStatement instanceof File && (
+                    <div className="space-y-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="bg-transparent"
+                        onClick={() => setShowPreview(!showPreview)}
+                        disabled={isMergingPreview}
+                      >
+                        {isMergingPreview ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Combining files...
+                          </>
+                        ) : showPreview ? (
+                          "Hide Preview"
+                        ) : (
+                          "Show Preview"
+                        )}
+                      </Button>
+
+                      {mergeError && (
                         <Alert variant="destructive">
                           <AlertCircle className="h-4 w-4" />
-                          <AlertDescription>
-                            {errors.receipt.message as string}
-                          </AlertDescription>
+                          <AlertDescription>{mergeError}</AlertDescription>
                         </Alert>
+                      )}
+
+                      {showPreview && combinedPreviewUrl && (
+                        <div className="border rounded-lg p-4 bg-muted/50">
+                          <h4 className="font-medium text-sm mb-3">
+                            Combined PDF Preview (Receipt + Bank Statement)
+                          </h4>
+                          <iframe
+                            src={combinedPreviewUrl}
+                            className="w-full h-96 rounded border"
+                            title="Combined PDF Preview"
+                          />
+                        </div>
                       )}
                     </div>
                   )}
-                />
               </div>
             )}
 
@@ -679,6 +812,12 @@ export default function ReimbursementForm() {
               <div className="space-y-2">
                 <Label className="text-muted-foreground">Receipt</Label>
                 <p className="text-sm">{watchedValues.receipt.name}</p>
+              </div>
+            )}
+            {watchedValues.bankStatement && (
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Bank Statement</Label>
+                <p className="text-sm">{watchedValues.bankStatement.name}</p>
               </div>
             )}
           </CardContent>
