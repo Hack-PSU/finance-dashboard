@@ -1,16 +1,18 @@
 "use client";
 
+import {
+  Category,
+  FinanceEntity,
+  Status,
+  SubmitterType,
+  useFinanceGetFinance,
+  useFinanceUpdateStatus,
+  useOrganizerGetAll,
+  useUserGetAll,
+} from "@hackpsu/react-sdk";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Status, Category, SubmitterType } from "@/common/api/finance/entity";
-import {
-  useAllFinances,
-  useUpdateFinanceStatus,
-} from "@/common/api/finance/hook";
-import { FinanceEntity } from "@/common/api/finance/entity";
-import { useAllUsers } from "@/common/api/user/hook";
-import { useAllOrganizers } from "@/common/api/organizer/hook";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,8 +71,8 @@ interface SubmitterCellProps {
 }
 
 function SubmitterCell({ id, type }: SubmitterCellProps) {
-  const { data: allUsers = [] } = useAllUsers();
-  const { data: allOrganizers = [] } = useAllOrganizers();
+  const { data: allUsers = [] } = useUserGetAll();
+  const { data: allOrganizers = [] } = useOrganizerGetAll();
 
   const getName = () => {
     if (type === SubmitterType.USER) {
@@ -221,8 +223,8 @@ export default function ReimbursementsPage() {
   const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
-  const { data: allUsers = [] } = useAllUsers();
-  const { data: allOrganizers = [] } = useAllOrganizers();
+  const { data: allUsers = [] } = useUserGetAll();
+  const { data: allOrganizers = [] } = useOrganizerGetAll();
 
   // Rejection dialog state
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
@@ -232,8 +234,8 @@ export default function ReimbursementsPage() {
   } | null>(null);
   const [rejectionMessage, setRejectionMessage] = useState("");
 
-  const { data: finances = [], error } = useAllFinances();
-  const updateMutation = useUpdateFinanceStatus();
+  const { data: finances = [], error } = useFinanceGetFinance();
+  const updateMutation = useFinanceUpdateStatus();
 
   // Fuse.js config
   const fuseOptions = {
@@ -277,8 +279,8 @@ export default function ReimbursementsPage() {
         onSuccess: () => {
           toast.success(`Status updated to ${newStatus}`);
         },
-        onError: (error: Error) => {
-          toast.error(error.message);
+        onError: (error: unknown) => {
+          toast.error((error instanceof Error ? error.message : undefined));
         },
       },
     );
@@ -304,8 +306,8 @@ export default function ReimbursementsPage() {
           setPendingRejection(null);
           setRejectionMessage("");
         },
-        onError: (error: Error) => {
-          toast.error(error.message);
+        onError: (error: unknown) => {
+          toast.error((error instanceof Error ? error.message : undefined));
         },
       },
     );
