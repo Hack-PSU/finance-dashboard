@@ -1,4 +1,7 @@
 // components/DataTable/StatusCell.tsx
+import {
+  Status,
+} from "@hackpsu/react-sdk";
 import React from "react";
 import {
   Select,
@@ -8,7 +11,6 @@ import {
   Box,
   SelectChangeEvent,
 } from "@mui/material";
-import { Status } from "@/common/api/finance";
 import { styled } from "@mui/material/styles";
 
 interface StatusCellProps {

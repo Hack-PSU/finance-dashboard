@@ -845,6 +845,20 @@
     protobufjs "^7.2.5"
     yargs "^17.7.2"
 
+"@hackpsu/api-client@1.0.8":
+  version "1.0.8"
+  resolved "https://us-east4-npm.pkg.dev/hackpsu-408118/npm/@hackpsu/api-client/-/@hackpsu/api-client-1.0.8.tgz#d6cb2d62420ab3a4ae053d89bbc61def0c86c815"
+  integrity sha512-xsOIWR0q1yQsoIHy4PnG2UHCuu1IjtTJLDjHPyiOXS3Hwm8kkInyyl4kI/rQRo+hTvNR71Lmk18vjxnqgfP8pw==
+
+"@hackpsu/react-sdk@^1.0.8":
+  version "1.0.8"
+  resolved "https://us-east4-npm.pkg.dev/hackpsu-408118/npm/@hackpsu/react-sdk/-/@hackpsu/react-sdk-1.0.8.tgz#5a90452434d3cab5fd7d27b58fccbf7ebe306576"
+  integrity sha512-wu7HC2KF6Ni4mcEy4CY2YKKWi01UIvx9OzZH0xopzeT1Qn65O6DVfjCRAnriK+S+GQX9MpYNpXMBqhSvvXvDfQ==
+  dependencies:
+    "@hackpsu/api-client" "1.0.8"
+    firebase "^12.0.0"
+    jwt-decode "^4.0.0"
+
 "@hookform/resolvers@^4.0.0":
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/@hookform/resolvers/-/resolvers-4.1.3.tgz#97a20cc0e88d3b66c50e1e9fd6e089a94c689e07"

@@ -1,6 +1,9 @@
+import {
+  FinanceEntity,
+  Status,
+} from "@hackpsu/react-sdk";
 import React from "react";
 import { Typography, Paper } from "@mui/material";
-import { FinanceEntity, Status } from "@/common/api/finance/entity";
 
 export const AverageSpendingPerSubmission = ({
   finances,

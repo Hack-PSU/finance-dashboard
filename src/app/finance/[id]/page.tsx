@@ -1,12 +1,17 @@
 "use client";
 
+import {
+  Category,
+  FinanceEntity,
+  Status,
+  useFinanceGetOne,
+  useFinancePatchFinance,
+  useOrganizerGetAll,
+  useUserGetAll,
+} from "@hackpsu/react-sdk";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { useFinance, usePatchFinance } from "@/common/api/finance/hook";
-import { FinanceEntity, Category, Status } from "@/common/api/finance/entity";
-import { useAllUsers } from "@/common/api/user/hook";
-import { useAllOrganizers } from "@/common/api/organizer/hook";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,15 +58,15 @@ export default function FinancePage({
   const { id } = React.use(params);
 
   const router = useRouter();
-  const { data: finance, isLoading, error } = useFinance(id);
-  const { data: allUsers = [] } = useAllUsers();
-  const { data: allOrganizers = [] } = useAllOrganizers();
-  const patchMutation = usePatchFinance();
+  const { data: finance, isLoading, error } = useFinanceGetOne(id);
+  const { data: allUsers = [] } = useUserGetAll();
+  const { data: allOrganizers = [] } = useOrganizerGetAll();
+  const patchMutation = useFinancePatchFinance();
 
   const [form, setForm] = useState<EditableFields>({
     amount: 0,
     description: "",
-    category: Category.TelephoneRental,
+    category: Category.Telephone_Rental,
     street: "",
     city: "",
     state: "",
@@ -186,8 +191,8 @@ export default function FinancePage({
           toast.success("Reimbursement updated successfully");
           setHasChanges(false);
         },
-        onError: (error: Error) => {
-          toast.error(error.message || "Failed to update reimbursement");
+        onError: (error: unknown) => {
+          toast.error((error instanceof Error ? error.message : undefined) || "Failed to update reimbursement");
         },
       },
     );

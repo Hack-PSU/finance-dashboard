@@ -8,7 +8,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Status, FinanceEntity } from "@/common/api/finance/entity"; // Assuming FinanceEntity is the correct type for finances array elements
+import { FinanceEntity, Status } from "@hackpsu/react-sdk";
 import CheckCircleOutline from "@mui/icons-material/CheckCircleOutline";
 import HighlightOff from "@mui/icons-material/HighlightOff";
 import HourglassEmpty from "@mui/icons-material/HourglassEmpty";

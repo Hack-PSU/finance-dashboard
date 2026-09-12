@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  Category,
+  Status,
+  useFinanceGetFinance,
+  useFirebase,
+} from "@hackpsu/react-sdk";
 import { useMemo } from "react";
 import {
   Card,
@@ -36,13 +42,10 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { useAllFinances } from "@/common/api/finance/hook";
-import { Status, Category } from "@/common/api/finance/entity";
-import { useFirebase } from "@/common/context";
 
 export default function ProfileAnalytics() {
   const { user } = useFirebase();
-  const { data: allFinances = [], isLoading } = useAllFinances();
+  const { data: allFinances = [], isLoading } = useFinanceGetFinance();
 
   const userFinances = useMemo(
     () => allFinances.filter((finance) => finance.submitterId === user?.uid),
@@ -59,7 +62,7 @@ export default function ProfileAnalytics() {
     const pendingAmount = userFinances
       .filter((f) => f.status === Status.PENDING)
       .reduce((sum, f) => sum + Number(f.amount), 0);
-    const REJECTED_STATUSES = [
+    const REJECTED_STATUSES: Status[] = [
       Status.REJECTED_INVALID_RECEIPT,
       Status.REJECTED_WRONG_ADDRESS,
       Status.REJECTED_WRONG_DESCRIPTION,

@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  Category,
+  Status,
+  SubmitterType,
+  useFinanceGetFinance,
+  useOrganizerGetAll,
+  useUserGetAll,
+} from "@hackpsu/react-sdk";
 import { useMemo, useState } from "react";
 import {
   Card,
@@ -42,16 +50,11 @@ import {
   Users,
   Target,
 } from "lucide-react";
-import { useAllFinances } from "@/common/api/finance/hook";
-import { Status, Category } from "@/common/api/finance/entity";
-import { useAllOrganizers } from "@/common/api/organizer/hook";
-import { useAllUsers } from "@/common/api/user/hook";
-import { SubmitterType } from "@/common/api/finance/entity";
 
 export default function OrganizationSpendingAnalytics() {
-  const { data: allFinances = [], isLoading } = useAllFinances();
-  const { data: allOrganizers = [] } = useAllOrganizers();
-  const { data: allUsers = [] } = useAllUsers();
+  const { data: allFinances = [], isLoading } = useFinanceGetFinance();
+  const { data: allOrganizers = [] } = useOrganizerGetAll();
+  const { data: allUsers = [] } = useUserGetAll();
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
 
   const getSubmitterName = (
@@ -92,7 +95,7 @@ export default function OrganizationSpendingAnalytics() {
     const pendingAmount = filteredFinances
       .filter((f) => f.status === Status.PENDING)
       .reduce((sum, f) => sum + Number(f.amount), 0);
-    const REJECTED_STATUSES = [
+    const REJECTED_STATUSES: Status[] = [
       Status.REJECTED_INVALID_RECEIPT,
       Status.REJECTED_WRONG_ADDRESS,
       Status.REJECTED_WRONG_DESCRIPTION,

@@ -1,3 +1,7 @@
+import {
+  Category,
+  FinanceEntity,
+} from "@hackpsu/react-sdk";
 import React from "react";
 import {
   Typography,
@@ -7,7 +11,6 @@ import {
   ListItemText,
   Box,
 } from "@mui/material";
-import { FinanceEntity, Category } from "@/common/api/finance/entity";
 
 const MAX_CATEGORIES_TO_SHOW = 5;
 
