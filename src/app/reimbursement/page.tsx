@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Category,
+  Status,
+  SubmitterType,
+  useFinanceCreateFinance,
+  useFirebase,
+} from "@hackpsu/react-sdk";
 import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,13 +47,6 @@ import {
   ArrowRight,
   Loader2,
 } from "lucide-react";
-import { useFirebase } from "@/common/context";
-import {
-  Status,
-  SubmitterType,
-  useCreateFinance,
-  Category,
-} from "@/common/api/finance";
 import { mergeReceiptAndBankStatement } from "@/lib/pdf";
 
 // Zod schema
@@ -146,7 +146,7 @@ export default function ReimbursementForm() {
   const [isMergingPreview, setIsMergingPreview] = useState(false);
   const [mergeError, setMergeError] = useState<string | null>(null);
   const { user } = useFirebase();
-  const createFinance = useCreateFinance();
+  const createFinance = useFinanceCreateFinance();
 
   const form = useForm<ReimbursementFormData>({
     resolver: zodResolver(reimbursementSchema),
@@ -225,25 +225,26 @@ export default function ReimbursementForm() {
     try {
       setIsSubmitting(true);
 
+      // The receipt and bank statement are merged into a single PDF before
+      // upload; the generated client then serialises it as multipart itself.
       const combinedFile = await mergeReceiptAndBankStatement(
         data.receipt,
         data.bankStatement,
       );
 
-      const formData = new FormData();
-      formData.append("receipt", combinedFile);
+      const { receipt, bankStatement, ...fields } = data;
 
-      Object.entries(data).forEach(([key, value]) => {
-        if (key !== "receipt" && key !== "bankStatement") {
-          formData.append(key, String(value));
-        }
+      await createFinance.mutateAsync({
+        data: {
+          ...fields,
+          amount: Number(fields.amount),
+          submitterType: SubmitterType.ORGANIZER,
+          submitterId: user.uid,
+          status: Status.PENDING,
+          reminderSent: false,
+          receipt: combinedFile,
+        },
       });
-
-      formData.append("submitterType", SubmitterType.ORGANIZER);
-      formData.append("submitterId", user.uid);
-      formData.append("status", Status.PENDING);
-
-      await createFinance.mutateAsync(formData);
 
       toast.success("Reimbursement request submitted successfully!");
       reset();
@@ -252,7 +253,7 @@ export default function ReimbursementForm() {
       console.error("Submission error:", error);
       toast.error(
         error instanceof Error
-          ? error.message
+          ? (error instanceof Error ? error.message : undefined)
           : "Failed to submit reimbursement",
       );
     } finally {

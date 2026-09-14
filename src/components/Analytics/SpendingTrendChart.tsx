@@ -1,5 +1,8 @@
 "use client"; // If using state and effects directly in this component
 
+import {
+  FinanceEntity,
+} from "@hackpsu/react-sdk";
 import React, { useState, useMemo } from "react";
 import { Paper, Typography, TextField, Grid, Box } from "@mui/material";
 import {
@@ -12,7 +15,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { FinanceEntity } from "@/common/api/finance/entity";
 import {
   format,
   parseISO,

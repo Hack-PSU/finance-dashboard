@@ -1,14 +1,14 @@
 // app/components/Reimbursements/ReimbursementDetail.tsx
 "use client";
 
+import {
+  Category,
+  FinanceEntity,
+  useFinanceGetOne,
+  useFinancePatchFinance,
+} from "@hackpsu/react-sdk";
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import {
-  FinanceEntity,
-  useFinance,
-  usePatchFinance,
-} from "@/common/api/finance";
-import { Category } from "@/common/api/finance/entity";
 import {
   Box,
   Paper,
@@ -38,13 +38,13 @@ export default function ReimbursementDetail({
   id: string;
 }): React.JSX.Element {
   const router = useRouter();
-  const { data: finance, isLoading, error } = useFinance(id);
-  const patchMutation = usePatchFinance();
+  const { data: finance, isLoading, error } = useFinanceGetOne(id);
+  const patchMutation = useFinancePatchFinance();
 
   const [form, setForm] = useState<EditableFields>({
     amount: 0,
     description: "",
-    category: Category.TelephoneRental,
+    category: Category.Telephone_Rental,
     street: "",
     city: "",
     state: "",
@@ -111,10 +111,10 @@ export default function ReimbursementDetail({
               message: `${field} updated`,
               severity: "success",
             }),
-          onError: (err: Error) =>
+          onError: (err: unknown) =>
             setSnackbar({
               open: true,
-              message: err.message ?? `Failed updating ${field}`,
+              message: (err instanceof Error ? err.message : undefined) ?? `Failed updating ${field}`,
               severity: "error",
             }),
         },
