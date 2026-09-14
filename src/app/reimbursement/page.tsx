@@ -103,8 +103,11 @@ const reimbursementSchema = z.object({
     .refine((file) => file instanceof File, "Bank statement is required")
     .refine((file) => file?.size <= 5000000, "File size must be less than 5MB")
     .refine(
-      (file) => file?.type === "application/pdf",
-      "Only PDF files are allowed",
+      (file) =>
+        ["application/pdf", "image/jpeg", "image/png", "image/jpg"].includes(
+          file?.type,
+        ),
+      "Only PDF, JPEG, and PNG files are allowed",
     ),
 });
 
@@ -626,7 +629,7 @@ export default function ReimbursementForm() {
                               Upload Bank Statement
                             </h3>
                             <p className="text-xs text-muted-foreground">
-                              PDF up to 5MB
+                              PDF, JPEG, or PNG up to 5MB
                             </p>
                           </div>
                           <Button
@@ -644,7 +647,7 @@ export default function ReimbursementForm() {
                           <input
                             id="bank-statement-upload"
                             type="file"
-                            accept=".pdf"
+                            accept=".pdf,.jpg,.jpeg,.png"
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0] || null;
