@@ -105,8 +105,16 @@ const LINE_ITEM_PRESETS = [
   { label: "Sapphire Sponsorship Package (Half-Year)", price: 8000 },
   { label: "Sapphire Sponsorship Package (Full-Year)", price: 14000 },
 
+  // PSU Department Sponsorship Packages
+  { label: "PSU Department Bronze Sponsorship Package", price: 1000 },
+  { label: "PSU Department Silver Sponsorship Package", price: 2000 },
+  { label: "PSU Department Gold Sponsorship Package", price: 5000 },
+  { label: "PSU Department Platinum Sponsorship Package", price: 8000 },
+
   { label: "Host a Challenge", price: 2000 },
   { label: "Host a Workshop", price: 1750 },
+  { label: "Sponsor a Track", price: 1250 },
+  { label: "Add Logo / Increase Logo Size", price: 1000 },
 
   { label: "Sponsored Dinner", price: 2500 },
   { label: "Sponsored Lunch", price: 2000 },
@@ -127,6 +135,17 @@ const LINE_ITEM_PRESETS = [
   { label: "Logos on T-Shirts", price: 0 },
   { label: "Promo Email Pre-Event", price: 0 },
   { label: "Social Media Promotion", price: 0 },
+
+  // Perks added automatically when a PSU Department tier package is selected (price 0)
+  { label: "Present Challenge and Prizes", price: 0 },
+  { label: "Present at Opening Ceremony (2 mins)", price: 0 },
+  { label: "Present at Opening Ceremony (5 mins)", price: 0 },
+  { label: "Host a Mini Event", price: 0 },
+  { label: "Access to Resume Book Post Event", price: 0 },
+  { label: "Access to Interview Rooms", price: 0 },
+  { label: "Logos on T-Shirts (Small)", price: 0 },
+  { label: "Logos on T-Shirts (Medium)", price: 0 },
+  { label: "Logos on T-Shirts (Large)", price: 0 },
 ];
 
 export default function InvoiceGenerator() {
@@ -517,6 +536,10 @@ export default function InvoiceGenerator() {
     platinum: false,
     diamond: false,
     sapphire: false,
+    psuBronze: false,
+    psuSilver: false,
+    psuGold: false,
+    psuPlatinum: false,
   });
 
   useEffect(() => {
@@ -533,6 +556,16 @@ export default function InvoiceGenerator() {
     const platinumSelected = isTierSelected("Platinum");
     const diamondSelected = isTierSelected("Diamond");
     const sapphireSelected = isTierSelected("Sapphire");
+
+    const isPSUTierSelected = (tier: string) =>
+      lineItems.some(
+        (item) => item.description === `PSU Department ${tier} Sponsorship Package`,
+      );
+
+    const psuBronzeSelected = isPSUTierSelected("Bronze");
+    const psuSilverSelected = isPSUTierSelected("Silver");
+    const psuGoldSelected = isPSUTierSelected("Gold");
+    const psuPlatinumSelected = isPSUTierSelected("Platinum");
 
     const bronzeFreeItems = [
       "Send Mentors",
@@ -603,6 +636,49 @@ export default function InvoiceGenerator() {
       "Social Media Promotion",
     ];
 
+    const psuBronzeFreeItems = [
+      "Send Mentors",
+      "Company Table",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+    ];
+
+    const psuSilverFreeItems = [
+      "Send Mentors",
+      "Company Table",
+      "Access to Resume Book Post Event",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+      "Logos on T-Shirts (Small)",
+    ];
+
+    const psuGoldFreeItems = [
+      "Send Mentors",
+      "Sponsor a Challenge",
+      "Present Challenge and Prizes",
+      "Company Table", // quantity 2
+      "Present at Opening Ceremony (2 mins)",
+      "Access to Resume Book Post Event",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+      "Logos on T-Shirts (Medium)",
+    ];
+
+    const psuPlatinumFreeItems = [
+      "Send Mentors",
+      "Sponsor a Challenge",
+      "Present Challenge and Prizes",
+      "Company Table", // quantity 2
+      "Present at Opening Ceremony (5 mins)",
+      "Host a Mini Event",
+      "Access to Resume Book Post Event",
+      "Access to Interview Rooms",
+      "Distribution of Promotional Material",
+      "Logos on all Platforms",
+      "Logos on T-Shirts (Large)",
+      "Promo Email Pre-Event",
+    ];
+
     // All possible freebie descriptions, used to clear stale ones on tier switch
     const allFreeItems = Array.from(
       new Set([
@@ -612,6 +688,10 @@ export default function InvoiceGenerator() {
         ...platinumFreeItems,
         ...diamondFreeItems,
         ...sapphireFreeItems,
+        ...psuBronzeFreeItems,
+        ...psuSilverFreeItems,
+        ...psuGoldFreeItems,
+        ...psuPlatinumFreeItems,
       ]),
     );
 
@@ -622,7 +702,11 @@ export default function InvoiceGenerator() {
       !goldSelected &&
       !platinumSelected &&
       !diamondSelected &&
-      !sapphireSelected
+      !sapphireSelected &&
+      !psuBronzeSelected &&
+      !psuSilverSelected &&
+      !psuGoldSelected &&
+      !psuPlatinumSelected
     ) {
       allFreeItems.forEach((desc) => {
         const index = lineItems.findIndex(
@@ -639,6 +723,10 @@ export default function InvoiceGenerator() {
         platinum: false,
         diamond: false,
         sapphire: false,
+        psuBronze: false,
+        psuSilver: false,
+        psuGold: false,
+        psuPlatinum: false,
       };
       return;
     }
@@ -649,73 +737,63 @@ export default function InvoiceGenerator() {
         if (!lineItems.some((item) => item.description === desc)) {
           append({
             description: desc,
-            quantity: desc === "Company Table" && (diamondSelected || sapphireSelected) ? 2 : 1,
+            quantity:
+              desc === "Company Table" &&
+              (diamondSelected ||
+                sapphireSelected ||
+                psuGoldSelected ||
+                psuPlatinumSelected)
+                ? 2
+                : 1,
             unitPrice: 0,
           });
         }
       });
     };
 
+    const resetFlags = {
+      bronze: false,
+      silver: false,
+      gold: false,
+      platinum: false,
+      diamond: false,
+      sapphire: false,
+      psuBronze: false,
+      psuSilver: false,
+      psuGold: false,
+      psuPlatinum: false,
+    };
+
     if (sapphireSelected && !addedTiersRef.current.sapphire) {
       addFreeItems(sapphireFreeItems);
-      addedTiersRef.current = {
-        bronze: false,
-        silver: false,
-        gold: false,
-        platinum: false,
-        diamond: false,
-        sapphire: true,
-      };
+      addedTiersRef.current = { ...resetFlags, sapphire: true };
     } else if (diamondSelected && !addedTiersRef.current.diamond) {
       addFreeItems(diamondFreeItems);
-      addedTiersRef.current = {
-        bronze: false,
-        silver: false,
-        gold: false,
-        platinum: false,
-        diamond: true,
-        sapphire: false,
-      };
+      addedTiersRef.current = { ...resetFlags, diamond: true };
     } else if (platinumSelected && !addedTiersRef.current.platinum) {
       addFreeItems(platinumFreeItems);
-      addedTiersRef.current = {
-        bronze: false,
-        silver: false,
-        gold: false,
-        platinum: true,
-        diamond: false,
-        sapphire: false,
-      };
+      addedTiersRef.current = { ...resetFlags, platinum: true };
     } else if (goldSelected && !addedTiersRef.current.gold) {
       addFreeItems(goldFreeItems);
-      addedTiersRef.current = {
-        bronze: false,
-        silver: false,
-        gold: true,
-        platinum: false,
-        diamond: false,
-        sapphire: false,
-      };
+      addedTiersRef.current = { ...resetFlags, gold: true };
     } else if (silverSelected && !addedTiersRef.current.silver) {
       addFreeItems(silverFreeItems);
-      addedTiersRef.current = {
-        bronze: false,
-        silver: true,
-        gold: false,
-        platinum: false,
-        diamond: false,
-        sapphire: false,
-      };
+      addedTiersRef.current = { ...resetFlags, silver: true };
     } else if (bronzeSelected && !addedTiersRef.current.bronze) {
       addFreeItems(bronzeFreeItems);
-      addedTiersRef.current = {
-        bronze: true,
-        silver: false,
-        gold: false,
-        platinum: false,
-        diamond: false,
-        sapphire: false,
-      };
+      addedTiersRef.current = { ...resetFlags, bronze: true };
+    } else if (psuPlatinumSelected && !addedTiersRef.current.psuPlatinum) {
+      addFreeItems(psuPlatinumFreeItems);
+      addedTiersRef.current = { ...resetFlags, psuPlatinum: true };
+    } else if (psuGoldSelected && !addedTiersRef.current.psuGold) {
+      addFreeItems(psuGoldFreeItems);
+      addedTiersRef.current = { ...resetFlags, psuGold: true };
+    } else if (psuSilverSelected && !addedTiersRef.current.psuSilver) {
+      addFreeItems(psuSilverFreeItems);
+      addedTiersRef.current = { ...resetFlags, psuSilver: true };
+    } else if (psuBronzeSelected && !addedTiersRef.current.psuBronze) {
+      addFreeItems(psuBronzeFreeItems);
+      addedTiersRef.current = { ...resetFlags, psuBronze: true };
     }
 
     // Regenerate PDF after updating line items
